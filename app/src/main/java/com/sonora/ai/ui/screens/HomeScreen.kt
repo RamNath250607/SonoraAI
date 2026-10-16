@@ -97,7 +97,7 @@ fun HomeScreen(
                 Column {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
-                            text = "SONORA",
+                            text = "RAM",
                             color = SonoraTextPrimary,
                             fontSize = 24.sp,
                             fontWeight = FontWeight.ExtraBold,
@@ -105,14 +105,14 @@ fun HomeScreen(
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = "AI",
+                            text = "BEATS",
                             color = SonoraCyan,
                             fontSize = 24.sp,
                             fontWeight = FontWeight.ExtraBold
                         )
                     }
                     Text(
-                        text = "Smart Voice & Text Music Player",
+                        text = "Smart Voice & Full Music Player",
                         color = SonoraTextSecondary,
                         fontSize = 12.sp
                     )

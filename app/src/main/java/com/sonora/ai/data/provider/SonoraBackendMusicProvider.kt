@@ -55,13 +55,20 @@ class SonoraBackendMusicProvider(
                     val body = response.body?.string() ?: ""
                     val dtoArray = gson.fromJson(body, Array<BackendTrackDto>::class.java)
                     val tracks = dtoArray.map { dto ->
+                        val fixedStreamUrl = if (dto.streamUrl.contains("localhost") || dto.streamUrl.contains("127.0.0.1")) {
+                            dto.streamUrl.replace("http://localhost:8080", host)
+                                         .replace("http://127.0.0.1:8080", host)
+                        } else {
+                            dto.streamUrl
+                        }
+
                         Track(
                             id = dto.id,
                             title = dto.title,
                             artist = dto.artist,
                             album = dto.album ?: "Full Song Release",
                             artworkUrl = dto.artworkUrl ?: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600",
-                            streamUrl = dto.streamUrl,
+                            streamUrl = fixedStreamUrl,
                             durationMs = dto.durationMs,
                             sourceName = dto.sourceName ?: "Full Song Stream",
                             isPreview = dto.isPreview,
@@ -97,13 +104,20 @@ class SonoraBackendMusicProvider(
                     val body = response.body?.string() ?: ""
                     val dtoArray = gson.fromJson(body, Array<BackendTrackDto>::class.java)
                     val tracks = dtoArray.map { dto ->
+                        val fixedStreamUrl = if (dto.streamUrl.contains("localhost") || dto.streamUrl.contains("127.0.0.1")) {
+                            dto.streamUrl.replace("http://localhost:8080", host)
+                                         .replace("http://127.0.0.1:8080", host)
+                        } else {
+                            dto.streamUrl
+                        }
+
                         Track(
                             id = dto.id,
                             title = dto.title,
                             artist = dto.artist,
                             album = dto.album ?: "Full Song Release",
                             artworkUrl = dto.artworkUrl ?: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600",
-                            streamUrl = dto.streamUrl,
+                            streamUrl = fixedStreamUrl,
                             durationMs = dto.durationMs,
                             sourceName = dto.sourceName ?: "Full Song Stream",
                             isPreview = dto.isPreview,
