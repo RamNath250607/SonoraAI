@@ -70,8 +70,10 @@ class CommandResponse(BaseModel):
     originalText: str
     confidence: float = 1.0
 
-# Memory cache for resolved full songs
+# Memory caches for full song streams and search results
 FULL_SONG_CACHE = {}
+STREAM_URL_CACHE = {}
+SEARCH_CACHE = {}
 
 # Curated High-Quality Live Radio Stations
 CURATED_RADIO_STATIONS: List[RadioStationDto] = [
@@ -144,6 +146,29 @@ def save_hosted_songs(songs: List[dict]):
     with open(META_FILE, "w", encoding="utf-8") as f:
         json.dump(songs, f, indent=2, ensure_ascii=False)
 
+async def resolve_video_audio_stream(video_id: str) -> Optional[str]:
+    clean_id = video_id.strip()
+    if clean_id in STREAM_URL_CACHE:
+        return STREAM_URL_CACHE[clean_id]
+
+    loop = asyncio.get_event_loop()
+    def _extract():
+        try:
+            cmd = ["yt-dlp", "-f", "ba[ext=m4a]/ba", "-g", f"https://www.youtube.com/watch?v={clean_id}"]
+            res = subprocess.run(cmd, capture_output=True, text=True, timeout=12)
+            if res.returncode == 0 and res.stdout.strip():
+                lines = [l.strip() for l in res.stdout.strip().splitlines() if l.strip().startswith("http")]
+                if lines:
+                    return lines[-1]
+        except Exception as e:
+            print(f"Stream extract error for {clean_id}: {e}")
+        return None
+
+    url = await loop.run_in_executor(None, _extract)
+    if url:
+        STREAM_URL_CACHE[clean_id] = url
+    return url
+
 async def resolve_full_song_stream(query: str) -> Optional[TrackDto]:
     clean = query.strip()
     key = clean.lower()
@@ -163,9 +188,12 @@ async def resolve_full_song_stream(query: str) -> Optional[TrackDto]:
             if res.returncode == 0 and res.stdout:
                 data = json.loads(res.stdout)
                 stream_url = data.get("url")
+                vid_id = data.get("id")
                 if stream_url:
+                    if vid_id:
+                        STREAM_URL_CACHE[vid_id] = stream_url
                     track = TrackDto(
-                        id=f"full_{data.get('id', uuid.uuid4().hex[:8])}",
+                        id=f"full_{vid_id or uuid.uuid4().hex[:8]}",
                         title=data.get("title", clean),
                         artist=data.get("uploader", "Music Artist").replace(" - Topic", ""),
                         album="Full Song Release",
@@ -185,18 +213,100 @@ async def resolve_full_song_stream(query: str) -> Optional[TrackDto]:
 
     return await loop.run_in_executor(None, _fetch)
 
+async def search_full_songs(query: str, base_url: str, limit: int = 20) -> List[TrackDto]:
+    clean = query.strip()
+    cache_key = clean.lower()
+    if cache_key in SEARCH_CACHE:
+        return SEARCH_CACHE[cache_key]
+
+    loop = asyncio.get_event_loop()
+    def _search():
+        tracks = []
+        try:
+            cmd = [
+                "yt-dlp",
+                "--flat-playlist",
+                "--dump-json",
+                f"ytsearch{limit + 5}:{clean} song"
+            ]
+            res = subprocess.run(cmd, capture_output=True, text=True, timeout=15)
+            if res.returncode == 0 and res.stdout:
+                for line in res.stdout.strip().splitlines():
+                    if not line.strip():
+                        continue
+                    try:
+                        data = json.loads(line)
+                        vid_id = data.get("id")
+                        dur = data.get("duration") or 240
+                        if dur < 45 or dur > 900:
+                            continue
+
+                        raw_title = data.get("title", clean)
+                        cleaned_title = re.sub(r"[\(\[\{](Video Song|Official|Lyrical|Audio|4K|HD|Full Song|Song|Music Video|Remastered)[\)\]\}]", "", raw_title, flags=re.I).strip()
+                        cleaned_title = re.sub(r"\|.*$", "", cleaned_title).strip()
+                        if not cleaned_title:
+                            cleaned_title = raw_title
+
+                        artist = data.get("uploader") or data.get("channel") or "Music Artist"
+                        artist = artist.replace(" - Topic", "").replace("VEVO", "").strip()
+
+                        art = f"https://i.ytimg.com/vi/{vid_id}/hqdefault.jpg"
+                        thumbs = data.get("thumbnails", [])
+                        if thumbs and isinstance(thumbs, list):
+                            art = thumbs[-1].get("url") or art
+
+                        tracks.append(
+                            TrackDto(
+                                id=f"full_{vid_id}",
+                                title=cleaned_title,
+                                artist=artist,
+                                album="Full Song Release",
+                                artworkUrl=art,
+                                streamUrl=f"{base_url}/api/stream/{vid_id}",
+                                durationMs=int(dur * 1000),
+                                sourceName="Full Song Stream",
+                                isPreview=False,
+                                isLive=False,
+                                genre="Soundtrack"
+                            )
+                        )
+                        if len(tracks) >= limit:
+                            break
+                    except Exception:
+                        pass
+        except Exception as e:
+            print(f"Full song search error for '{query}': {e}")
+        return tracks
+
+    results = await loop.run_in_executor(None, _search)
+    if results:
+        SEARCH_CACHE[cache_key] = results
+    return results
+
 @app.get("/")
 def root():
     return {
         "app": "SONORA AI Backend",
-        "version": "1.3.0",
+        "version": "1.4.0",
         "status": "online",
-        "features": ["full-song-stream", "full-song-host", "live-radio", "nlp-voice", "cross-platform-pwa"]
+        "features": ["100%-full-songs", "full-song-stream", "full-song-host", "live-radio", "nlp-voice", "cross-platform-pwa"]
     }
 
 @app.get("/health")
 def health():
     return {"status": "ok", "service": "sonora-ai-backend"}
+
+@app.api_route("/api/stream/{video_id}", methods=["GET", "HEAD"])
+async def get_audio_stream(video_id: str):
+    """
+    Streams full audio with HTTP 307 redirect for any song.
+    Fully compatible with browsers, iPhone Safari, Android Chrome, and ExoPlayer.
+    """
+    clean_id = video_id.replace("full_", "").replace("yt_", "")
+    stream_url = await resolve_video_audio_stream(clean_id)
+    if not stream_url:
+        raise HTTPException(status_code=404, detail="Audio stream could not be resolved.")
+    return RedirectResponse(url=stream_url, status_code=307, headers={"Access-Control-Allow-Origin": "*"})
 
 @app.get("/api/full-song", response_model=TrackDto)
 async def get_full_song(q: str = Query(..., min_length=1)):
@@ -207,6 +317,7 @@ async def get_full_song(q: str = Query(..., min_length=1)):
     if not track:
         raise HTTPException(status_code=404, detail="Full song stream could not be resolved.")
     return track
+
 
 @app.get("/api/hosted-songs", response_model=List[TrackDto])
 def get_hosted_songs(request: Request):
@@ -320,6 +431,7 @@ async def get_radio_stations(tag: Optional[str] = None):
 @app.get("/api/search", response_model=List[TrackDto])
 async def search_music(request: Request, q: str = Query(..., min_length=1), limit: int = Query(25, ge=1, le=50)):
     clean_query = q.strip()
+    base_url = str(request.base_url).rstrip("/")
     tracks: List[TrackDto] = []
 
     # 1. Check Host Server Full Songs
@@ -329,41 +441,15 @@ async def search_music(request: Request, q: str = Query(..., min_length=1), limi
         if q_lower in hs.title.lower() or q_lower in hs.artist.lower() or q_lower in hs.genre.lower() or q_lower in hs.album.lower():
             tracks.append(hs)
 
-    # 2. Resolve FULL SONG stream via backend resolver (Highest Priority for Playback!)
-    full_track = await resolve_full_song_stream(clean_query)
-    if full_track:
-        tracks.insert(0, full_track)
+    # 2. Search 100% FULL SONGS (no previews)
+    full_songs = await search_full_songs(clean_query, base_url, limit=limit)
+    tracks.extend(full_songs)
 
-    # 3. Add Apple Music / iTunes Public Catalog items
-    try:
-        encoded_query = urllib.parse.quote(clean_query)
-        url = f"https://itunes.apple.com/search?term={encoded_query}&media=music&entity=song&limit={limit}"
-        async with httpx.AsyncClient(timeout=8.0) as client:
-            resp = await client.get(url, headers={"User-Agent": "SonoraAI-Backend/1.0"})
-            if resp.status_code == 200:
-                data = resp.json()
-                for item in data.get("results", []):
-                    preview_url = item.get("previewUrl")
-                    if preview_url:
-                        raw_art = item.get("artworkUrl100", "")
-                        art_600 = raw_art.replace("100x100bb.jpg", "600x600bb.jpg").replace("100x100bb.png", "600x600bb.png")
-                        tracks.append(
-                            TrackDto(
-                                id=f"itunes_{item.get('trackId')}",
-                                title=item.get("trackName", "Unknown"),
-                                artist=item.get("artistName", "Unknown"),
-                                album=item.get("collectionName", item.get("trackName", "Single")),
-                                artworkUrl=art_600,
-                                streamUrl=preview_url,
-                                durationMs=30000,
-                                sourceName="Official Audio Preview",
-                                isPreview=True,
-                                genre=item.get("primaryGenreName", ""),
-                                releaseDate=item.get("releaseDate", "")
-                            )
-                        )
-    except Exception as e:
-        print(f"iTunes query warning: {e}")
+    # If already in full song cache, ensure instant #1 position
+    if q_lower in FULL_SONG_CACHE:
+        first_track = FULL_SONG_CACHE[q_lower]
+        tracks = [t for t in tracks if t.id != first_track.id]
+        tracks.insert(0, first_track)
 
     # Deduplicate by ID
     seen_ids = set()
@@ -374,6 +460,7 @@ async def search_music(request: Request, q: str = Query(..., min_length=1), limi
             distinct_tracks.append(t)
 
     return distinct_tracks[:limit]
+
 
 @app.get("/api/trending", response_model=List[TrackDto])
 async def get_trending(request: Request, category: str = Query("Tamil Hits")):
