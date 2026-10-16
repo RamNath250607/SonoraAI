@@ -21,6 +21,7 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
@@ -47,6 +48,7 @@ body {
   padding: 24px 20px;
   gap: 20px;
   overflow-y: auto;
+  flex-shrink: 0;
 }
 
 .brand {
@@ -124,6 +126,24 @@ body {
   padding: 2px 8px;
   border-radius: 12px;
   font-size: 11px;
+}
+
+.badge-live {
+  margin-left: auto;
+  background: rgba(255, 77, 109, 0.2);
+  color: var(--error);
+  border: 1px solid var(--error);
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  animation: pulse-red 2s infinite;
+}
+
+@keyframes pulse-red {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
 }
 
 .voice-card {
@@ -292,19 +312,6 @@ body {
   color: #fff;
 }
 
-.btn-circle {
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  border: 1px solid var(--border);
-  background: var(--surface);
-  color: var(--text-muted);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
 /* Categories */
 .categories-bar {
   display: flex;
@@ -337,6 +344,28 @@ body {
   border-color: var(--cyan);
   color: #fff;
   box-shadow: 0 0 12px rgba(157, 78, 221, 0.4);
+}
+
+/* Radio filters */
+.radio-filter-pills {
+  display: flex;
+  gap: 8px;
+}
+
+.radio-filter-chip {
+  padding: 6px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  color: var(--text-muted);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.radio-filter-chip.active {
+  background: var(--cyan);
+  color: #000;
+  font-weight: 700;
 }
 
 /* Hero Banner */
@@ -551,6 +580,24 @@ body {
   text-overflow: ellipsis;
 }
 
+/* Radio Station Card */
+.radio-card {
+  border-top: 3px solid var(--error);
+}
+
+.radio-live-tag {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(255, 77, 109, 0.9);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+}
+
 /* Tracks Table */
 .tracks-table {
   display: flex;
@@ -631,6 +678,16 @@ body {
   background: rgba(0, 245, 212, 0.12);
   padding: 2px 6px;
   border-radius: 4px;
+}
+
+.badge-tag.full {
+  color: #2ec4b6;
+  background: rgba(46, 196, 182, 0.15);
+}
+
+.badge-tag.live {
+  color: var(--error);
+  background: rgba(255, 77, 109, 0.15);
 }
 
 .track-duration {
@@ -810,6 +867,42 @@ body {
   cursor: pointer;
 }
 
+/* Upload Modal Box */
+.upload-modal-box {
+  width: 460px;
+}
+
+.upload-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-align: left;
+}
+
+.form-group label {
+  font-size: 12px;
+  color: var(--text-muted);
+  display: block;
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: #fff;
+  outline: none;
+  font-size: 13px;
+}
+
+.form-group input:focus {
+  border-color: var(--cyan);
+}
+
 /* Voice Modal */
 .voice-modal-backdrop {
   position: fixed;
@@ -923,4 +1016,85 @@ body {
   margin-top: 14px;
   font-size: 11px;
   color: var(--text-dim);
+}
+
+/* Mobile Bottom Navigation */
+.mobile-bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 90px;
+  left: 0;
+  right: 0;
+  height: 54px;
+  background: #0f0a1c;
+  border-top: 1px solid var(--border);
+  z-index: 90;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.mob-nav-item {
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 10px;
+  gap: 3px;
+  cursor: pointer;
+}
+
+.mob-nav-item i {
+  font-size: 15px;
+}
+
+.mob-nav-item.active {
+  color: var(--cyan);
+}
+
+/* Responsive Media Queries for Mobile & iPhone */
+@media (max-width: 768px) {
+  .sidebar {
+    display: none;
+  }
+
+  .mobile-bottom-nav {
+    display: flex;
+  }
+
+  .main-content {
+    padding: 16px 16px 160px 16px;
+  }
+
+  .hero-banner {
+    flex-direction: column;
+    text-align: center;
+    padding: 24px 16px;
+  }
+
+  .hero-visual {
+    margin-top: 20px;
+  }
+
+  .hero-actions {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .player-content {
+    padding: 0 12px;
+  }
+
+  .player-track-info {
+    width: 140px;
+  }
+
+  .player-right {
+    display: none;
+  }
+
+  .voice-modal-content, .upload-modal-box {
+    width: 90vw;
+  }
 }

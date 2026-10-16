@@ -1,6 +1,6 @@
-// SONORA AI Web Player Client
+// SONORA AI Multi-Device Web Client (iPhone, Android, Laptop)
 const API_BASE = window.location.port === "3000" 
-  ? "http://localhost:8080" 
+  ? `http://${window.location.hostname}:8080` 
   : window.location.origin;
 
 // State
@@ -10,6 +10,8 @@ let queueIndex = -1;
 let isShuffle = false;
 let repeatMode = 0; // 0 = off, 1 = repeat all, 2 = repeat one
 let favorites = JSON.parse(localStorage.getItem("sonora_favs") || "[]");
+let radioStations = [];
+let hostedSongs = [];
 
 // DOM Elements
 const audio = document.getElementById("audio-engine");
@@ -18,11 +20,13 @@ const clearSearchBtn = document.getElementById("clear-search-btn");
 const searchMicBtn = document.getElementById("search-mic-btn");
 const sidebarMicBtn = document.getElementById("sidebar-mic-btn");
 const heroListenBtn = document.getElementById("hero-listen-btn");
-const heroTrendingBtn = document.getElementById("hero-trending-btn");
+const heroRadioBtn = document.getElementById("hero-radio-btn");
 const featuredCards = document.getElementById("featured-cards");
 const tracksList = document.getElementById("tracks-list");
 const searchResultsList = document.getElementById("search-results-list");
 const favoritesList = document.getElementById("favorites-list");
+const radioGrid = document.getElementById("radio-grid");
+const hostSongsList = document.getElementById("host-songs-list");
 const favBadge = document.getElementById("fav-badge");
 const categoryTitle = document.getElementById("category-title");
 
@@ -32,6 +36,7 @@ const playerArt = document.getElementById("player-art");
 const playerTitle = document.getElementById("player-title");
 const playerArtist = document.getElementById("player-artist");
 const playerFavBtn = document.getElementById("player-fav-btn");
+const playerBadge = document.getElementById("player-badge");
 const btnPlayPause = document.getElementById("btn-play-pause");
 const btnPrev = document.getElementById("btn-prev");
 const btnNext = document.getElementById("btn-next");
@@ -43,7 +48,7 @@ const timeCurrent = document.getElementById("time-current");
 const timeTotal = document.getElementById("time-total");
 const volumeSlider = document.getElementById("volume-slider");
 
-// Voice Modal Elements
+// Modals
 const voiceModal = document.getElementById("voice-modal");
 const voiceCloseBtn = document.getElementById("voice-close-btn");
 const voiceStatus = document.getElementById("voice-status-heading");
@@ -53,20 +58,32 @@ const voiceActionText = document.getElementById("voice-action-text");
 const voiceRetryBtn = document.getElementById("voice-retry-btn");
 const voiceDoneBtn = document.getElementById("voice-done-btn");
 
+const uploadModal = document.getElementById("upload-modal");
+const uploadCloseBtn = document.getElementById("upload-close-btn");
+const btnOpenUpload = document.getElementById("btn-open-upload");
+const btnUploadTriggerTab = document.getElementById("btn-upload-trigger-tab");
+const uploadForm = document.getElementById("upload-form");
+const uploadSubmitBtn = document.getElementById("upload-submit-btn");
+
 let recognition = null;
 let recognizedCommand = null;
 
 // Initialize
 document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("server-url-display").innerText = API_BASE;
   updateFavoritesBadge();
   loadTrending("Tamil Hits");
+  loadRadioStations("all");
+  loadHostedSongs();
   setupNavigation();
   setupAudioListeners();
   setupSearch();
   setupVoice();
+  setupUpload();
+  setupMediaSession();
 });
 
-// Category & Trending Fetch
+// Category & Trending
 async function loadTrending(category) {
   categoryTitle.innerText = category;
   tracksList.innerHTML = `<div style="padding:20px; color:#a69eb8;">Loading ${category} catalog...</div>`;
@@ -84,8 +101,71 @@ async function loadTrending(category) {
       tracksList.innerHTML = `<div style="padding:20px; color:#a69eb8;">No tracks found for ${category}.</div>`;
     }
   } catch (err) {
-    console.error("API error:", err);
-    tracksList.innerHTML = `<div style="padding:20px; color:#ff4d6d;">Could not connect to backend API at ${API_BASE}. Ensure Docker container is running!</div>`;
+    tracksList.innerHTML = `<div style="padding:20px; color:#ff4d6d;">Could not connect to host server at ${API_BASE}.</div>`;
+  }
+}
+
+// Live Radio Stations
+async function loadRadioStations(tag = "all") {
+  radioGrid.innerHTML = `<div style="padding:20px; color:#a69eb8;">Tuning into live radio streams...</div>`;
+  try {
+    const res = await fetch(`${API_BASE}/api/radio/stations?tag=${encodeURIComponent(tag)}`);
+    radioStations = await res.json();
+    renderRadioGrid(radioStations);
+  } catch (err) {
+    radioGrid.innerHTML = `<div style="padding:20px; color:#ff4d6d;">Failed to load live radio streams.</div>`;
+  }
+}
+
+function renderRadioGrid(stations) {
+  radioGrid.innerHTML = "";
+  stations.forEach(st => {
+    const card = document.createElement("div");
+    card.className = "music-card radio-card";
+    card.innerHTML = `
+      <span class="radio-live-tag">🔴 LIVE</span>
+      <div class="card-art-box">
+        <img src="${st.favicon || 'https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=300'}" alt="${st.name}">
+        <div class="card-play-overlay">
+          <div class="play-circle-small"><i class="fa-solid fa-play"></i></div>
+        </div>
+      </div>
+      <div class="card-title">${st.name}</div>
+      <div class="card-artist">${st.tags || 'Live Broadcast'}</div>
+    `;
+
+    card.addEventListener("click", () => {
+      const radioTrack = {
+        id: st.id,
+        title: st.name,
+        artist: "Live Radio Station",
+        album: st.tags || "Radio Broadcast",
+        artworkUrl: st.favicon || "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=300",
+        streamUrl: st.streamUrl,
+        durationMs: 0,
+        isLive: true,
+        sourceName: "Live Radio Station"
+      };
+      playTrack(radioTrack, [radioTrack]);
+    });
+
+    radioGrid.appendChild(card);
+  });
+}
+
+// Host Server Vault (Full Songs)
+async function loadHostedSongs() {
+  hostSongsList.innerHTML = `<div style="padding:20px; color:#a69eb8;">Loading full-length songs from host server vault...</div>`;
+  try {
+    const res = await fetch(`${API_BASE}/api/hosted-songs`);
+    hostedSongs = await res.json();
+    if (hostedSongs.length > 0) {
+      renderTrackList(hostSongsList, hostedSongs, hostedSongs);
+    } else {
+      hostSongsList.innerHTML = `<div style="padding:30px; text-align:center; color:#a69eb8;">No songs uploaded yet. Click <strong>"Add Song to Host"</strong> above to host your full MP3 tracks!</div>`;
+    }
+  } catch (err) {
+    hostSongsList.innerHTML = `<div style="padding:20px; color:#ff4d6d;">Host server library unavailable.</div>`;
   }
 }
 
@@ -111,12 +191,20 @@ function renderFeatured(tracks) {
 
 function renderTrackList(container, tracks, queue) {
   container.innerHTML = "";
-  tracks.forEach((track, idx) => {
+  tracks.forEach((track) => {
     const isPlaying = currentTrack && currentTrack.id === track.id && !audio.paused;
     const isFav = favorites.some(f => f.id === track.id);
 
     const row = document.createElement("div");
     row.className = `track-row ${currentTrack && currentTrack.id === track.id ? 'active' : ''}`;
+    
+    let badgeHtml = '<span class="badge-tag">PREVIEW</span>';
+    if (track.isLive) {
+      badgeHtml = '<span class="badge-tag live">🔴 LIVE</span>';
+    } else if (!track.isPreview) {
+      badgeHtml = '<span class="badge-tag full">FULL SONG</span>';
+    }
+
     row.innerHTML = `
       <div class="track-row-art">
         <img src="${track.artworkUrl || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=120'}" alt="${track.title}">
@@ -126,9 +214,9 @@ function renderTrackList(container, tracks, queue) {
         <div class="track-row-artist">${track.artist} • ${track.album || 'Single'}</div>
       </div>
       <div class="track-row-badges">
-        ${track.isPreview ? '<span class="badge-tag">PREVIEW</span>' : '<span class="badge-tag">FULL</span>'}
+        ${badgeHtml}
       </div>
-      <div class="track-duration">${formatTime(track.durationMs || 30000)}</div>
+      <div class="track-duration">${track.isLive ? 'LIVE' : formatTime(track.durationMs || 30000)}</div>
       <button class="btn-fav ${isFav ? 'active' : ''}" title="Favorite">
         <i class="fa-${isFav ? 'solid' : 'regular'} fa-heart"></i>
       </button>
@@ -158,15 +246,30 @@ function playTrack(track, queue = [track]) {
   queueIndex = queue.findIndex(t => t.id === track.id);
 
   playerTitle.innerText = track.title;
-  playerArtist.innerText = `${track.artist} • ${track.album}`;
+  playerArtist.innerText = `${track.artist} • ${track.album || ''}`;
   playerArt.src = track.artworkUrl || "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=120";
   
+  if (track.isLive) {
+    playerBadge.innerText = "🔴 LIVE";
+    playerBadge.className = "preview-badge live";
+    timeTotal.innerText = "LIVE";
+  } else if (!track.isPreview) {
+    playerBadge.innerText = "FULL SONG";
+    playerBadge.className = "preview-badge full";
+    timeTotal.innerText = formatTime(track.durationMs);
+  } else {
+    playerBadge.innerText = "PREVIEW";
+    playerBadge.className = "preview-badge";
+    timeTotal.innerText = formatTime(track.durationMs || 30000);
+  }
+
   audio.src = track.streamUrl;
   audio.play().then(() => {
     updatePlayPauseButton(true);
     highlightActiveRows();
+    updateMediaSession();
   }).catch(err => {
-    console.error("Playback failed:", err);
+    console.error("Playback error:", err);
   });
 
   updateFavIcon();
@@ -180,6 +283,40 @@ function highlightActiveRows() {
   document.querySelectorAll(".track-row").forEach(row => {
     row.classList.remove("active");
   });
+}
+
+// MediaSession for iPhone Lockscreen, Mac & Android Controls
+function setupMediaSession() {
+  if ('mediaSession' in navigator) {
+    navigator.mediaSession.setActionHandler('play', () => {
+      audio.play();
+      updatePlayPauseButton(true);
+    });
+    navigator.mediaSession.setActionHandler('pause', () => {
+      audio.pause();
+      updatePlayPauseButton(false);
+    });
+    navigator.mediaSession.setActionHandler('previoustrack', skipPrev);
+    navigator.mediaSession.setActionHandler('nexttrack', skipNext);
+    navigator.mediaSession.setActionHandler('seekto', (details) => {
+      if (details.seekTime && audio.duration) {
+        audio.currentTime = details.seekTime;
+      }
+    });
+  }
+}
+
+function updateMediaSession() {
+  if ('mediaSession' in navigator && currentTrack) {
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: currentTrack.title,
+      artist: currentTrack.artist,
+      album: currentTrack.album || "SONORA AI",
+      artwork: [
+        { src: currentTrack.artworkUrl || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=512', sizes: '512x512', type: 'image/jpeg' }
+      ]
+    });
+  }
 }
 
 function setupAudioListeners() {
@@ -211,6 +348,11 @@ function setupAudioListeners() {
   });
 
   audio.addEventListener("timeupdate", () => {
+    if (currentTrack && currentTrack.isLive) {
+      seekProgress.style.width = "100%";
+      timeCurrent.innerText = "LIVE";
+      return;
+    }
     if (audio.duration) {
       const progress = (audio.currentTime / audio.duration) * 100;
       seekProgress.style.width = `${progress}%`;
@@ -229,6 +371,7 @@ function setupAudioListeners() {
   });
 
   seekContainer.addEventListener("click", (e) => {
+    if (currentTrack && currentTrack.isLive) return;
     const rect = seekContainer.getBoundingClientRect();
     const pos = (e.clientX - rect.left) / rect.width;
     if (audio.duration) {
@@ -316,7 +459,7 @@ async function performSearch(query) {
 
   switchTab("search");
   document.getElementById("search-title").innerText = `Results for "${clean}"`;
-  searchResultsList.innerHTML = `<div style="padding:20px; color:#a69eb8;">Searching catalogs...</div>`;
+  searchResultsList.innerHTML = `<div style="padding:20px; color:#a69eb8;">Searching catalogs & host server...</div>`;
 
   try {
     const res = await fetch(`${API_BASE}/api/search?q=${encodeURIComponent(clean)}&limit=25`);
@@ -332,9 +475,60 @@ async function performSearch(query) {
   }
 }
 
+// Upload Full Song to Host
+function setupUpload() {
+  const openModal = () => uploadModal.style.display = "flex";
+  const closeModal = () => uploadModal.style.display = "none";
+
+  btnOpenUpload.addEventListener("click", openModal);
+  btnUploadTriggerTab.addEventListener("click", openModal);
+  uploadCloseBtn.addEventListener("click", closeModal);
+
+  uploadForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const fileInput = document.getElementById("upload-file-input");
+    const titleInput = document.getElementById("upload-title");
+    const artistInput = document.getElementById("upload-artist");
+    const albumInput = document.getElementById("upload-album");
+
+    if (!fileInput.files[0]) return;
+
+    const formData = new FormData();
+    formData.append("file", fileInput.files[0]);
+    formData.append("title", titleInput.value);
+    formData.append("artist", artistInput.value);
+    formData.append("album", albumInput.value || "Host Vault");
+
+    uploadSubmitBtn.disabled = true;
+    uploadSubmitBtn.innerText = "Hosting Full Song...";
+
+    try {
+      const res = await fetch(`${API_BASE}/api/upload-song`, {
+        method: "POST",
+        body: formData
+      });
+      const newSong = await res.json();
+      closeModal();
+      uploadForm.reset();
+      uploadSubmitBtn.disabled = false;
+      uploadSubmitBtn.innerHTML = `<i class="fa-solid fa-upload"></i> Host & Save Full Song`;
+
+      // Reload vault and play immediately
+      await loadHostedSongs();
+      switchTab("host-library");
+      playTrack(newSong, [newSong]);
+    } catch (err) {
+      alert("Failed to upload song to host server: " + err.message);
+      uploadSubmitBtn.disabled = false;
+      uploadSubmitBtn.innerText = "Try Again";
+    }
+  });
+}
+
 // Navigation Tabs
 function setupNavigation() {
-  document.querySelectorAll(".nav-item").forEach(btn => {
+  const allNavBtns = document.querySelectorAll(".nav-item, .mob-nav-item");
+  allNavBtns.forEach(btn => {
     btn.addEventListener("click", () => {
       const tab = btn.getAttribute("data-tab");
       switchTab(tab);
@@ -351,13 +545,22 @@ function setupNavigation() {
     });
   });
 
-  heroTrendingBtn.addEventListener("click", () => {
-    loadTrending("Tamil Hits");
+  document.querySelectorAll(".radio-filter-chip").forEach(chip => {
+    chip.addEventListener("click", () => {
+      document.querySelectorAll(".radio-filter-chip").forEach(c => c.classList.remove("active"));
+      chip.classList.add("active");
+      const tag = chip.getAttribute("data-tag");
+      loadRadioStations(tag);
+    });
+  });
+
+  heroRadioBtn.addEventListener("click", () => {
+    switchTab("radio");
   });
 }
 
 function switchTab(tabId) {
-  document.querySelectorAll(".nav-item").forEach(b => {
+  document.querySelectorAll(".nav-item, .mob-nav-item").forEach(b => {
     b.classList.toggle("active", b.getAttribute("data-tab") === tabId);
   });
   document.querySelectorAll(".tab-pane").forEach(pane => pane.classList.remove("active"));
@@ -366,6 +569,10 @@ function switchTab(tabId) {
 
   if (tabId === "favorites") {
     renderFavorites();
+  } else if (tabId === "host-library") {
+    loadHostedSongs();
+  } else if (tabId === "radio") {
+    loadRadioStations("all");
   }
 }
 
@@ -395,7 +602,7 @@ function setupVoice() {
 function startVoiceRecognition() {
   voiceModal.style.display = "flex";
   voiceStatus.innerText = "Listening...";
-  voiceTranscript.innerText = "Speak now: \"Play Jana Nayagan\", \"Anirudh songs\", or \"Pause\"";
+  voiceTranscript.innerText = "Speak now: \"Play Jana Nayagan\", \"Play Radio\", or \"Pause\"";
   voiceActionChip.style.display = "none";
   voiceRetryBtn.style.display = "none";
   voiceDoneBtn.style.display = "none";
@@ -403,12 +610,12 @@ function startVoiceRecognition() {
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SpeechRecognition) {
     voiceStatus.innerText = "Not Supported";
-    voiceTranscript.innerText = "Speech recognition is not supported in this browser. Try Chrome or Edge.";
+    voiceTranscript.innerText = "Speech recognition is not enabled in this browser. Try Chrome, Edge, or Safari on iOS.";
     return;
   }
 
   recognition = new SpeechRecognition();
-  recognition.lang = "en-IN"; // Supports Tamil/Indian English accents well
+  recognition.lang = "en-IN";
   recognition.continuous = false;
   recognition.interimResults = false;
 
@@ -430,7 +637,6 @@ function startVoiceRecognition() {
       voiceActionText.innerText = cmd.action + (cmd.query ? `: "${cmd.query}"` : "");
       voiceDoneBtn.style.display = "inline-flex";
 
-      // Auto-execute after 1s
       setTimeout(() => {
         executeRecognizedCommand();
       }, 1000);
@@ -439,9 +645,9 @@ function startVoiceRecognition() {
     }
   };
 
-  recognition.onerror = (e) => {
+  recognition.onerror = () => {
     voiceStatus.innerText = "Couldn't catch that";
-    voiceTranscript.innerText = "No speech detected or mic access denied.";
+    voiceTranscript.innerText = "No speech detected or mic permission denied.";
     voiceRetryBtn.style.display = "inline-flex";
   };
 
@@ -463,10 +669,23 @@ function executeRecognizedCommand() {
   if (action === "PLAY" && query) {
     searchInput.value = query;
     performSearch(query).then(() => {
-      // Auto play first result
       const firstRow = searchResultsList.querySelector(".track-row");
       if (firstRow) firstRow.click();
     });
+  } else if (action === "RADIO") {
+    switchTab("radio");
+    if (radioStations.length > 0) {
+      const st = radioStations[0];
+      playTrack({
+        id: st.id,
+        title: st.name,
+        artist: "Live Radio Station",
+        album: st.tags,
+        artworkUrl: st.favicon,
+        streamUrl: st.streamUrl,
+        isLive: true
+      });
+    }
   } else if (action === "PAUSE") {
     audio.pause();
     updatePlayPauseButton(false);

@@ -2,8 +2,17 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>SONORA AI — Smart Voice & Text Music Player</title>
+  
+  <!-- PWA & Mobile Meta for iPhone & Android -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0a0713">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="SONORA AI">
+  <link rel="apple-touch-icon" href="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=192">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -12,17 +21,19 @@
 </head>
 <body>
   <div class="app-layout">
-    <!-- Sidebar -->
+    <!-- Sidebar for Desktop & Tablets -->
     <aside class="sidebar">
       <div class="brand">
         <div class="brand-icon"><i class="fa-solid fa-bolt"></i></div>
         <h1>SONORA <span>AI</span></h1>
       </div>
-      <p class="brand-subtitle">Smart Voice & Text Music</p>
+      <p class="brand-subtitle">Smart Music for All Devices</p>
 
       <nav class="nav-menu">
         <button class="nav-item active" data-tab="home"><i class="fa-solid fa-house"></i> Home</button>
         <button class="nav-item" data-tab="search"><i class="fa-solid fa-magnifying-glass"></i> Search</button>
+        <button class="nav-item" data-tab="radio"><i class="fa-solid fa-tower-broadcast"></i> Live Radio <span class="badge-live">LIVE</span></button>
+        <button class="nav-item" data-tab="host-library"><i class="fa-solid fa-server"></i> Host Server Vault</button>
         <button class="nav-item" data-tab="favorites"><i class="fa-solid fa-heart"></i> Favorites <span id="fav-badge" class="badge">0</span></button>
       </nav>
 
@@ -31,36 +42,38 @@
           <i class="fa-solid fa-microphone-lines"></i>
           <span>Voice Commands</span>
         </div>
-        <p>Try saying:</p>
+        <p>Works on iPhone, Laptop & Android:</p>
         <div class="voice-pill">"Play Jana Nayagan"</div>
-        <div class="voice-pill">"Play latest Anirudh"</div>
+        <div class="voice-pill">"Play Tamil radio"</div>
         <div class="voice-pill">"Pause song"</div>
         <button id="sidebar-mic-btn" class="btn-voice-trigger">
-          <i class="fa-solid fa-microphone"></i> Start Voice Command
+          <i class="fa-solid fa-microphone"></i> Speak Command
         </button>
       </div>
 
       <div class="sidebar-footer">
         <div class="status-indicator">
-          <span class="status-dot"></span> Backend API Connected
+          <span class="status-dot"></span> Host Server Online
         </div>
-        <small>v1.0 • Media3 & Docker</small>
+        <small id="server-url-display">http://localhost:8080</small>
       </div>
     </aside>
 
-    <!-- Main Content -->
+    <!-- Main Content Area -->
     <main class="main-content">
       <!-- Top Bar -->
       <header class="top-bar">
         <div class="search-box">
           <i class="fa-solid fa-magnifying-glass search-icon"></i>
-          <input type="text" id="search-input" placeholder="Search songs, artists, Tamil movie hits...">
+          <input type="text" id="search-input" placeholder="Search songs, artists, movie hits, radio...">
           <button id="clear-search-btn" class="btn-icon" style="display:none;"><i class="fa-solid fa-xmark"></i></button>
           <button id="search-mic-btn" class="btn-icon btn-mic-accent" title="Voice Search"><i class="fa-solid fa-microphone"></i></button>
         </div>
 
         <div class="top-actions">
-          <button id="theme-btn" class="btn-circle" title="Theme"><i class="fa-solid fa-moon"></i></button>
+          <button id="btn-open-upload" class="btn-hero-primary" style="padding: 8px 16px; font-size: 13px;">
+            <i class="fa-solid fa-cloud-arrow-up"></i> Upload Full Song
+          </button>
         </div>
       </header>
 
@@ -74,17 +87,17 @@
         <button class="category-chip" data-cat="Lo-Fi">☕ Lo-Fi Chill</button>
       </div>
 
-      <!-- Tab Pages -->
+      <!-- Tab: Home -->
       <div id="tab-home" class="tab-pane active">
         <!-- Hero Banner -->
         <div class="hero-banner">
           <div class="hero-content">
-            <span class="hero-tag">AI-POWERED AUDIO PLAYER</span>
-            <h2>Find & Stream Songs With Your Voice</h2>
-            <p>Experience seamless playback with authorized catalogs, instant Tanglish NLP, and glowing cyber-violet styling.</p>
+            <span class="hero-tag">ALL DEVICES • FULL SONGS • LIVE RADIO</span>
+            <h2>Listen Anywhere: iPhone, Laptop, Android</h2>
+            <p>Stream full songs from your host server, tune into 24/7 Tamil & Global Live Radio, and command with speech.</p>
             <div class="hero-actions">
-              <button id="hero-listen-btn" class="btn-hero-primary"><i class="fa-solid fa-microphone"></i> Speak Command</button>
-              <button id="hero-trending-btn" class="btn-hero-secondary"><i class="fa-solid fa-play"></i> Play Curated Hits</button>
+              <button id="hero-listen-btn" class="btn-hero-primary"><i class="fa-solid fa-microphone"></i> Speak Voice Command</button>
+              <button id="hero-radio-btn" class="btn-hero-secondary"><i class="fa-solid fa-tower-broadcast"></i> Tune In Radio</button>
             </div>
           </div>
           <div class="hero-visual">
@@ -103,7 +116,7 @@
           <div id="featured-cards" class="cards-grid"></div>
         </section>
 
-        <!-- Recommended Section -->
+        <!-- Recommended Tracks Section -->
         <section class="section">
           <div class="section-header">
             <h3 id="category-title">Tamil Hits</h3>
@@ -124,6 +137,41 @@
         </section>
       </div>
 
+      <!-- Tab: Live Radio Hub -->
+      <div id="tab-radio" class="tab-pane">
+        <section class="section">
+          <div class="section-header">
+            <div>
+              <h3>24/7 Live Radio Stations</h3>
+              <p style="font-size: 13px; color: var(--text-muted); margin-top: 2px;">Stream live broadcasts non-stop across all devices</p>
+            </div>
+            <div class="radio-filter-pills">
+              <button class="radio-filter-chip active" data-tag="all">All Stations</button>
+              <button class="radio-filter-chip" data-tag="tamil">Tamil FM</button>
+              <button class="radio-filter-chip" data-tag="lofi">Lofi 24/7</button>
+              <button class="radio-filter-chip" data-tag="synthwave">Synthwave</button>
+            </div>
+          </div>
+          <div id="radio-grid" class="cards-grid"></div>
+        </section>
+      </div>
+
+      <!-- Tab: Host Server Library (Full Songs) -->
+      <div id="tab-host-library" class="tab-pane">
+        <section class="section">
+          <div class="section-header">
+            <div>
+              <h3>Host Server Full-Song Vault</h3>
+              <p style="font-size: 13px; color: var(--text-muted); margin-top: 2px;">Full songs hosted directly on your server with high-speed seeking</p>
+            </div>
+            <button id="btn-upload-trigger-tab" class="btn-hero-primary">
+              <i class="fa-solid fa-plus"></i> Add Song to Host
+            </button>
+          </div>
+          <div id="host-songs-list" class="tracks-table"></div>
+        </section>
+      </div>
+
       <!-- Tab: Favorites -->
       <div id="tab-favorites" class="tab-pane">
         <section class="section">
@@ -137,6 +185,15 @@
     </main>
   </div>
 
+  <!-- Mobile Bottom Nav for iPhone & Android Browsers -->
+  <nav class="mobile-bottom-nav">
+    <button class="mob-nav-item active" data-tab="home"><i class="fa-solid fa-house"></i><span>Home</span></button>
+    <button class="mob-nav-item" data-tab="search"><i class="fa-solid fa-magnifying-glass"></i><span>Search</span></button>
+    <button class="mob-nav-item" data-tab="radio"><i class="fa-solid fa-tower-broadcast"></i><span>Radio</span></button>
+    <button class="mob-nav-item" data-tab="host-library"><i class="fa-solid fa-server"></i><span>Vault</span></button>
+    <button class="mob-nav-item" data-tab="favorites"><i class="fa-solid fa-heart"></i><span>Favs</span></button>
+  </nav>
+
   <!-- Persistent Bottom Player Bar -->
   <footer class="player-bar" id="player-bar">
     <div class="progress-bar-container" id="seek-container">
@@ -148,7 +205,7 @@
       <div class="player-track-info">
         <img id="player-art" src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=120" alt="Artwork">
         <div class="player-titles">
-          <h4 id="player-title">Select a song to play</h4>
+          <h4 id="player-title">Select a song or radio station</h4>
           <p id="player-artist">SONORA AI</p>
         </div>
         <button id="player-fav-btn" class="btn-icon" title="Save to Favorites"><i class="fa-regular fa-heart"></i></button>
@@ -166,7 +223,7 @@
         <div class="player-time-row">
           <span id="time-current">0:00</span>
           <span>/</span>
-          <span id="time-total">0:30</span>
+          <span id="time-total">0:00</span>
           <span class="preview-badge" id="player-badge">PREVIEW</span>
         </div>
       </div>
@@ -178,6 +235,38 @@
       </div>
     </div>
   </footer>
+
+  <!-- Upload Full Song Modal -->
+  <div class="voice-modal-backdrop" id="upload-modal" style="display:none;">
+    <div class="voice-modal-content upload-modal-box">
+      <button class="voice-close-btn" id="upload-close-btn"><i class="fa-solid fa-xmark"></i></button>
+      <div class="brand-icon" style="margin-bottom:12px;"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+      <h3>Host a Full Song</h3>
+      <p style="font-size:12px; color:var(--text-muted); margin-bottom:16px;">Upload any MP3 or audio file to host and stream full-length songs across all your devices.</p>
+
+      <form id="upload-form" class="upload-form">
+        <div class="form-group">
+          <label>Audio File (MP3, M4A, AAC, WAV)</label>
+          <input type="file" id="upload-file-input" accept="audio/*" required>
+        </div>
+        <div class="form-group">
+          <label>Song Title</label>
+          <input type="text" id="upload-title" placeholder="e.g. Jana Nayagan Theme" required>
+        </div>
+        <div class="form-group">
+          <label>Artist / Singer</label>
+          <input type="text" id="upload-artist" placeholder="e.g. Anirudh Ravichander" required>
+        </div>
+        <div class="form-group">
+          <label>Album (Optional)</label>
+          <input type="text" id="upload-album" placeholder="e.g. Master OST">
+        </div>
+        <button type="submit" id="upload-submit-btn" class="btn-hero-primary" style="width:100%; justify-content:center; margin-top:8px;">
+          <i class="fa-solid fa-upload"></i> Host & Save Full Song
+        </button>
+      </form>
+    </div>
+  </div>
 
   <!-- Voice Listening Modal Overlay -->
   <div class="voice-modal-backdrop" id="voice-modal" style="display:none;">
@@ -193,7 +282,7 @@
       </div>
 
       <h3 id="voice-status-heading">Listening...</h3>
-      <p id="voice-transcript" class="voice-transcript">Speak now (e.g. "Play Jana Nayagan" or "Pause")</p>
+      <p id="voice-transcript" class="voice-transcript">Speak now (e.g. "Play Jana Nayagan", "Play Radio", or "Pause")</p>
       
       <div id="voice-action-chip" class="voice-action-chip" style="display:none;">
         <span>Action:</span> <strong id="voice-action-text">PLAY</strong>

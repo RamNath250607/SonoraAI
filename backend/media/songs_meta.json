@@ -1,0 +1,54 @@
+[
+  {
+    "id": "hosted_lofi_midnight",
+    "title": "Midnight Coffee Lo-Fi",
+    "artist": "Aesthetic Beats",
+    "album": "Host Server Vault Vol. 1",
+    "artworkUrl": "https://images.unsplash.com/photo-1518609878373-06d740f60d8b?w=600&auto=format&fit=crop&q=80",
+    "fileName": "lofi_study.mp3",
+    "streamUrl": "https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=lofi-study-112191.mp3",
+    "durationMs": 147000,
+    "sourceName": "Host Server (Full Song)",
+    "isPreview": false,
+    "genre": "Lo-Fi"
+  },
+  {
+    "id": "hosted_cyberpunk_drive",
+    "title": "Cyberpunk Drive",
+    "artist": "Neon Dreamer",
+    "album": "Host Server Vault Vol. 1",
+    "artworkUrl": "https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=600&auto=format&fit=crop&q=80",
+    "fileName": "cyberpunk_drive.mp3",
+    "streamUrl": "https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3?filename=electronic-future-beats-117997.mp3",
+    "durationMs": 168000,
+    "sourceName": "Host Server (Full Song)",
+    "isPreview": false,
+    "genre": "Synthwave"
+  },
+  {
+    "id": "hosted_sunset_melodies",
+    "title": "Sunset Melodies",
+    "artist": "Acoustic Horizon",
+    "album": "Host Server Vault Vol. 1",
+    "artworkUrl": "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600&auto=format&fit=crop&q=80",
+    "fileName": "sunset_melodies.mp3",
+    "streamUrl": "https://cdn.pixabay.com/download/audio/2022/11/06/audio_c976d8b945.mp3?filename=acoustic-guitars-ambient-126216.mp3",
+    "durationMs": 135000,
+    "sourceName": "Host Server (Full Song)",
+    "isPreview": false,
+    "genre": "Acoustic"
+  },
+  {
+    "id": "hosted_cinematic_epic",
+    "title": "Epic Symphony of the Titans",
+    "artist": "Symphonic Echoes",
+    "album": "Host Server Vault Vol. 1",
+    "artworkUrl": "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=600&auto=format&fit=crop&q=80",
+    "fileName": "cinematic_epic.mp3",
+    "streamUrl": "https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3?filename=cinematic-epic-112461.mp3",
+    "durationMs": 192000,
+    "sourceName": "Host Server (Full Song)",
+    "isPreview": false,
+    "genre": "Cinematic"
+  }
+]
