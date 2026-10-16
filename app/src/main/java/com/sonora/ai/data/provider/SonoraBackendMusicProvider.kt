@@ -26,12 +26,14 @@ data class BackendTrackDto(
 
 class SonoraBackendMusicProvider(
     private val hostCandidates: List<String> = listOf(
+        "https://suburban-quiz-initially-frontier.trycloudflare.com",
         "http://192.168.1.23:8080",
-        "http://10.0.2.2:8080"
+        "http://10.0.2.2:8080",
+        "http://localhost:8080"
     ),
     private val client: OkHttpClient = OkHttpClient.Builder()
-        .connectTimeout(4, TimeUnit.SECONDS)
-        .readTimeout(8, TimeUnit.SECONDS)
+        .connectTimeout(5, TimeUnit.SECONDS)
+        .readTimeout(10, TimeUnit.SECONDS)
         .build(),
     private val gson: Gson = Gson()
 ) : MusicProvider {
@@ -47,7 +49,7 @@ class SonoraBackendMusicProvider(
                 val url = "$host/api/search?q=$encodedQuery&limit=$limit"
                 val request = Request.Builder()
                     .url(url)
-                    .header("User-Agent", "SonoraAI-Android/1.4")
+                    .header("User-Agent", "SonoraAI-Android/2.0")
                     .build()
 
                 val response = client.newCall(request).execute()
@@ -55,9 +57,11 @@ class SonoraBackendMusicProvider(
                     val body = response.body?.string() ?: ""
                     val dtoArray = gson.fromJson(body, Array<BackendTrackDto>::class.java)
                     val tracks = dtoArray.map { dto ->
-                        val fixedStreamUrl = if (dto.streamUrl.contains("localhost") || dto.streamUrl.contains("127.0.0.1")) {
+                        val fixedStreamUrl = if (dto.streamUrl.contains("localhost:8080") || dto.streamUrl.contains("127.0.0.1:8080")) {
                             dto.streamUrl.replace("http://localhost:8080", host)
                                          .replace("http://127.0.0.1:8080", host)
+                        } else if (dto.streamUrl.startsWith("http://") && host.startsWith("https://")) {
+                            dto.streamUrl.replace("http://", "https://")
                         } else {
                             dto.streamUrl
                         }
@@ -104,9 +108,11 @@ class SonoraBackendMusicProvider(
                     val body = response.body?.string() ?: ""
                     val dtoArray = gson.fromJson(body, Array<BackendTrackDto>::class.java)
                     val tracks = dtoArray.map { dto ->
-                        val fixedStreamUrl = if (dto.streamUrl.contains("localhost") || dto.streamUrl.contains("127.0.0.1")) {
+                        val fixedStreamUrl = if (dto.streamUrl.contains("localhost:8080") || dto.streamUrl.contains("127.0.0.1:8080")) {
                             dto.streamUrl.replace("http://localhost:8080", host)
                                          .replace("http://127.0.0.1:8080", host)
+                        } else if (dto.streamUrl.startsWith("http://") && host.startsWith("https://")) {
+                            dto.streamUrl.replace("http://", "https://")
                         } else {
                             dto.streamUrl
                         }

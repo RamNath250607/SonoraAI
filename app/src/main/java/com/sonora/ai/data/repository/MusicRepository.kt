@@ -1,7 +1,6 @@
 package com.sonora.ai.data.repository
 
 import com.sonora.ai.data.model.Track
-import com.sonora.ai.data.provider.ItunesMusicProvider
 import com.sonora.ai.data.provider.MusicProvider
 import com.sonora.ai.data.provider.OpenAudioMusicProvider
 import com.sonora.ai.data.provider.SonoraBackendMusicProvider
@@ -11,7 +10,6 @@ import kotlinx.coroutines.withContext
 class MusicRepository(
     private val providers: List<MusicProvider> = listOf(
         SonoraBackendMusicProvider(),
-        ItunesMusicProvider(),
         OpenAudioMusicProvider()
     )
 ) {
@@ -29,13 +27,14 @@ class MusicRepository(
         val allResults = mutableListOf<Track>()
         var primaryError: Throwable? = null
 
-        // Try primary provider (iTunes)
         for (provider in providers) {
             val result = provider.search(cleanQuery, limit)
             if (result.isSuccess) {
                 val tracks = result.getOrNull().orEmpty()
-                allResults.addAll(tracks)
-                if (allResults.size >= limit) break
+                if (tracks.isNotEmpty()) {
+                    allResults.addAll(tracks)
+                    break // Stop immediately once full songs are found!
+                }
             } else if (primaryError == null) {
                 primaryError = result.exceptionOrNull()
             }

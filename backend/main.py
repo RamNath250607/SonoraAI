@@ -468,6 +468,8 @@ async def get_radio_stations(tag: Optional[str] = None):
 async def search_music(request: Request, q: str = Query(..., min_length=1), limit: int = Query(25, ge=1, le=50)):
     clean_query = q.strip()
     base_url = str(request.base_url).rstrip("/")
+    if request.headers.get("x-forwarded-proto") == "https" or "trycloudflare.com" in base_url:
+        base_url = base_url.replace("http://", "https://")
     tracks: List[TrackDto] = []
 
     # 1. Check Host Server Full Songs
