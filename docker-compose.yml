@@ -1,0 +1,16 @@
+services:
+  sonora-backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: sonora-ai-backend
+    ports:
+      - "8080:8000"
+    environment:
+      - PORT=8000
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
