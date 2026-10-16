@@ -71,6 +71,10 @@ let recognizedCommand = null;
 // Initialize
 document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("server-url-display").innerText = API_BASE;
+  const topbarApkBtn = document.getElementById("topbar-download-apk-btn");
+  const sidebarApkBtn = document.getElementById("sidebar-download-apk-btn");
+  if (topbarApkBtn) topbarApkBtn.href = `${API_BASE}/api/download-apk`;
+  if (sidebarApkBtn) sidebarApkBtn.href = `${API_BASE}/api/download-apk`;
   updateFavoritesBadge();
   loadTrending("Tamil Hits");
   loadRadioStations("all");
@@ -217,15 +221,27 @@ function renderTrackList(container, tracks, queue) {
         ${badgeHtml}
       </div>
       <div class="track-duration">${track.isLive ? 'LIVE' : formatTime(track.durationMs || 30000)}</div>
+      ${track.isLive ? '' : `
+      <button class="btn-track-download" title="Download Song">
+        <i class="fa-solid fa-download"></i>
+      </button>`}
       <button class="btn-fav ${isFav ? 'active' : ''}" title="Favorite">
         <i class="fa-${isFav ? 'solid' : 'regular'} fa-heart"></i>
       </button>
     `;
 
     row.addEventListener("click", (e) => {
-      if (e.target.closest(".btn-fav")) return;
+      if (e.target.closest(".btn-fav") || e.target.closest(".btn-track-download")) return;
       playTrack(track, queue);
     });
+
+    const downloadBtn = row.querySelector(".btn-track-download");
+    if (downloadBtn) {
+      downloadBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        downloadTrack(track);
+      });
+    }
 
     const favBtn = row.querySelector(".btn-fav");
     favBtn.addEventListener("click", (e) => {
@@ -389,6 +405,33 @@ function setupAudioListeners() {
       updateFavIcon();
     }
   });
+
+  const playerDownloadBtn = document.getElementById("player-download-btn");
+  if (playerDownloadBtn) {
+    playerDownloadBtn.addEventListener("click", () => {
+      if (currentTrack) {
+        downloadTrack(currentTrack);
+      }
+    });
+  }
+}
+
+function downloadTrack(track) {
+  if (!track) return;
+  if (track.isLive) {
+    alert("Live radio broadcasts cannot be downloaded.");
+    return;
+  }
+  const cleanId = track.id.replace("full_", "").replace("yt_", "");
+  const safeTitle = encodeURIComponent(track.title);
+  const downloadUrl = `${API_BASE}/api/download/${cleanId}?title=${safeTitle}`;
+  
+  const a = document.createElement("a");
+  a.href = downloadUrl;
+  a.download = `${track.title}.m4a`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
 }
 
 function skipNext() {

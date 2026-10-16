@@ -51,6 +51,16 @@
         </button>
       </div>
 
+      <div class="sidebar-apk-box">
+        <a id="sidebar-download-apk-btn" href="/api/download-apk" download="SonoraAI.apk" class="sidebar-apk-btn" title="Download SonoraAI.apk for Android">
+          <i class="fa-brands fa-android"></i>
+          <div>
+            <strong>Get Android App</strong>
+            <small>Download SonoraAI.apk</small>
+          </div>
+        </a>
+      </div>
+
       <div class="sidebar-footer">
         <div class="status-indicator">
           <span class="status-dot"></span> Host Server Online
@@ -71,6 +81,9 @@
         </div>
 
         <div class="top-actions">
+          <a id="topbar-download-apk-btn" href="/api/download-apk" download="SonoraAI.apk" class="btn-apk-download" title="Download Android APK">
+            <i class="fa-brands fa-android"></i> Download APK
+          </a>
           <button id="btn-open-upload" class="btn-hero-primary" style="padding: 8px 16px; font-size: 13px;">
             <i class="fa-solid fa-cloud-arrow-up"></i> Upload Full Song
           </button>
@@ -98,6 +111,7 @@
             <div class="hero-actions">
               <button id="hero-listen-btn" class="btn-hero-primary"><i class="fa-solid fa-microphone"></i> Speak Voice Command</button>
               <button id="hero-radio-btn" class="btn-hero-secondary"><i class="fa-solid fa-tower-broadcast"></i> Tune In Radio</button>
+              <a href="/api/download-apk" download="SonoraAI.apk" class="btn-hero-secondary" style="text-decoration:none;"><i class="fa-brands fa-android"></i> Download APK</a>
             </div>
           </div>
           <div class="hero-visual">
@@ -208,6 +222,7 @@
           <h4 id="player-title">Select a song or radio station</h4>
           <p id="player-artist">SONORA AI</p>
         </div>
+        <button id="player-download-btn" class="btn-icon" title="Download Current Song"><i class="fa-solid fa-download"></i></button>
         <button id="player-fav-btn" class="btn-icon" title="Save to Favorites"><i class="fa-regular fa-heart"></i></button>
       </div>
 

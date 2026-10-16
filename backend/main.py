@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Query, HTTPException, UploadFile, File, Form, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, FileResponse
 from pydantic import BaseModel
 from typing import List, Optional
 import httpx
@@ -307,6 +307,42 @@ async def get_audio_stream(video_id: str):
     if not stream_url:
         raise HTTPException(status_code=404, detail="Audio stream could not be resolved.")
     return RedirectResponse(url=stream_url, status_code=307, headers={"Access-Control-Allow-Origin": "*"})
+
+@app.get("/api/download-apk")
+def download_android_apk():
+    """
+    Directly downloads the compiled Android SonoraAI.apk to any phone or laptop.
+    """
+    apk_path = os.path.join(MEDIA_DIR, "app-debug.apk")
+    if os.path.exists(apk_path):
+        return FileResponse(
+            apk_path,
+            filename="SonoraAI.apk",
+            media_type="application/vnd.android.package-archive"
+        )
+    raise HTTPException(status_code=404, detail="SonoraAI.apk build not found on server.")
+
+@app.get("/api/download/{video_id}")
+async def download_track_audio(video_id: str, title: Optional[str] = "song"):
+    """
+    Directly triggers a browser download for the full song.
+    """
+    clean_id = video_id.replace("full_", "").replace("yt_", "")
+    stream_url = await resolve_video_audio_stream(clean_id)
+    if not stream_url:
+        raise HTTPException(status_code=404, detail="Audio stream could not be resolved.")
+
+    safe_title = re.sub(r'[\\/*?:"<>|]', "", title or "Song").strip() or "SonoraSong"
+    safe_title = safe_title.replace(" ", "_")
+
+    return RedirectResponse(
+        url=stream_url,
+        status_code=307,
+        headers={
+            "Content-Disposition": f'attachment; filename="{safe_title}.m4a"',
+            "Access-Control-Allow-Origin": "*"
+        }
+    )
 
 @app.get("/api/full-song", response_model=TrackDto)
 async def get_full_song(q: str = Query(..., min_length=1)):
