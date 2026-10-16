@@ -4,11 +4,13 @@ import com.sonora.ai.data.model.Track
 import com.sonora.ai.data.provider.ItunesMusicProvider
 import com.sonora.ai.data.provider.MusicProvider
 import com.sonora.ai.data.provider.OpenAudioMusicProvider
+import com.sonora.ai.data.provider.SonoraBackendMusicProvider
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 class MusicRepository(
     private val providers: List<MusicProvider> = listOf(
+        SonoraBackendMusicProvider(),
         ItunesMusicProvider(),
         OpenAudioMusicProvider()
     )
