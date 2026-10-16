@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Query, HTTPException, UploadFile, File, Form, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
 from typing import List, Optional
 import httpx
@@ -9,11 +10,13 @@ import os
 import json
 import uuid
 import urllib.parse
+import subprocess
+import asyncio
 
 app = FastAPI(
     title="SONORA AI Backend API",
-    version="1.2.0",
-    description="Authorized music search aggregation, host server full-song storage, live radio streaming, and NLP command processing."
+    version="1.3.0",
+    description="Authorized music search aggregation, full-song stream resolution, host server storage, live radio, and NLP command processing."
 )
 
 app.add_middleware(
@@ -40,7 +43,7 @@ class TrackDto(BaseModel):
     artworkUrl: str
     streamUrl: str
     durationMs: int
-    sourceName: str = "Official Audio Stream"
+    sourceName: str = "Full Song Stream"
     isPreview: bool = False
     isLive: bool = False
     genre: str = ""
@@ -62,10 +65,13 @@ class CommandRequest(BaseModel):
     language: Optional[str] = "auto"
 
 class CommandResponse(BaseModel):
-    action: str # "PLAY", "PAUSE", "RESUME", "NEXT", "PREVIOUS", "FAVORITE", "SEARCH", "RADIO", "UNKNOWN"
+    action: str
     query: Optional[str] = None
     originalText: str
     confidence: float = 1.0
+
+# Memory cache for resolved full songs
+FULL_SONG_CACHE = {}
 
 # Curated High-Quality Live Radio Stations
 CURATED_RADIO_STATIONS: List[RadioStationDto] = [
@@ -138,24 +144,72 @@ def save_hosted_songs(songs: List[dict]):
     with open(META_FILE, "w", encoding="utf-8") as f:
         json.dump(songs, f, indent=2, ensure_ascii=False)
 
+async def resolve_full_song_stream(query: str) -> Optional[TrackDto]:
+    clean = query.strip()
+    key = clean.lower()
+    if key in FULL_SONG_CACHE:
+        return FULL_SONG_CACHE[key]
+
+    loop = asyncio.get_event_loop()
+    def _fetch():
+        try:
+            cmd = [
+                "yt-dlp",
+                "-f", "ba[ext=m4a]/ba",
+                "--dump-json",
+                f"ytsearch1:{clean} song"
+            ]
+            res = subprocess.run(cmd, capture_output=True, text=True, timeout=12)
+            if res.returncode == 0 and res.stdout:
+                data = json.loads(res.stdout)
+                stream_url = data.get("url")
+                if stream_url:
+                    track = TrackDto(
+                        id=f"full_{data.get('id', uuid.uuid4().hex[:8])}",
+                        title=data.get("title", clean),
+                        artist=data.get("uploader", "Music Artist").replace(" - Topic", ""),
+                        album="Full Song Release",
+                        artworkUrl=data.get("thumbnail") or "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600",
+                        streamUrl=stream_url,
+                        durationMs=int(data.get("duration", 240) * 1000),
+                        sourceName="Full Song Stream",
+                        isPreview=False,
+                        isLive=False,
+                        genre="Soundtrack"
+                    )
+                    FULL_SONG_CACHE[key] = track
+                    return track
+        except Exception as e:
+            print(f"Full song resolve error: {e}")
+        return None
+
+    return await loop.run_in_executor(None, _fetch)
+
 @app.get("/")
 def root():
     return {
         "app": "SONORA AI Backend",
-        "version": "1.2.0",
+        "version": "1.3.0",
         "status": "online",
-        "features": ["full-song-host", "live-radio", "nlp-voice", "cross-platform-pwa"]
+        "features": ["full-song-stream", "full-song-host", "live-radio", "nlp-voice", "cross-platform-pwa"]
     }
 
 @app.get("/health")
 def health():
     return {"status": "ok", "service": "sonora-ai-backend"}
 
+@app.get("/api/full-song", response_model=TrackDto)
+async def get_full_song(q: str = Query(..., min_length=1)):
+    """
+    Directly resolves and returns a FULL LENGTH (3-5 min) playable audio stream for any query.
+    """
+    track = await resolve_full_song_stream(q)
+    if not track:
+        raise HTTPException(status_code=404, detail="Full song stream could not be resolved.")
+    return track
+
 @app.get("/api/hosted-songs", response_model=List[TrackDto])
 def get_hosted_songs(request: Request):
-    """
-    Returns full songs hosted directly on this server.
-    """
     base_url = str(request.base_url).rstrip("/")
     raw_songs = load_hosted_songs()
     results: List[TrackDto] = []
@@ -190,9 +244,6 @@ async def upload_song(
     album: str = Form("Host Uploads"),
     genre: str = Form("User Music")
 ):
-    """
-    Upload an audio file (MP3, M4A, AAC, WAV) to host it as a full playable song on the server.
-    """
     ext = os.path.splitext(file.filename)[1].lower() or ".mp3"
     clean_name = f"{uuid.uuid4()}{ext}"
     dest_path = os.path.join(MEDIA_DIR, clean_name)
@@ -205,14 +256,7 @@ async def upload_song(
     stream_url = f"{base_url}/media/{clean_name}"
     song_id = f"hosted_{uuid.uuid4().hex[:8]}"
 
-    artwork_pool = [
-        "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=600",
-        "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=600",
-        "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600",
-        "https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=600"
-    ]
-    artwork = artwork_pool[len(clean_name) % len(artwork_pool)]
-
+    artwork = "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600"
     new_entry = {
         "id": song_id,
         "title": title.strip(),
@@ -246,13 +290,9 @@ async def upload_song(
 
 @app.get("/api/radio/stations", response_model=List[RadioStationDto])
 async def get_radio_stations(tag: Optional[str] = None):
-    """
-    Returns curated 24/7 radio stations and queries public Radio Browser API.
-    """
     stations = list(CURATED_RADIO_STATIONS)
 
     if tag and tag.lower() not in ["all", "curated"]:
-        # Query Radio Browser for specific tag (e.g. 'tamil', 'india', 'lofi')
         try:
             url = f"https://de1.api.radio-browser.info/json/stations/bytag/{urllib.parse.quote(tag.lower())}?limit=15"
             async with httpx.AsyncClient(timeout=6.0) as client:
@@ -282,14 +322,19 @@ async def search_music(request: Request, q: str = Query(..., min_length=1), limi
     clean_query = q.strip()
     tracks: List[TrackDto] = []
 
-    # 1. First priority: Check Host Server Full Songs
+    # 1. Check Host Server Full Songs
     hosted = get_hosted_songs(request)
     q_lower = clean_query.lower()
     for hs in hosted:
         if q_lower in hs.title.lower() or q_lower in hs.artist.lower() or q_lower in hs.genre.lower() or q_lower in hs.album.lower():
             tracks.append(hs)
 
-    # 2. Second: Check Apple Music / iTunes Public Catalog
+    # 2. Resolve FULL SONG stream via backend resolver (Highest Priority for Playback!)
+    full_track = await resolve_full_song_stream(clean_query)
+    if full_track:
+        tracks.insert(0, full_track)
+
+    # 3. Add Apple Music / iTunes Public Catalog items
     try:
         encoded_query = urllib.parse.quote(clean_query)
         url = f"https://itunes.apple.com/search?term={encoded_query}&media=music&entity=song&limit={limit}"
@@ -320,7 +365,15 @@ async def search_music(request: Request, q: str = Query(..., min_length=1), limi
     except Exception as e:
         print(f"iTunes query warning: {e}")
 
-    return tracks[:limit]
+    # Deduplicate by ID
+    seen_ids = set()
+    distinct_tracks = []
+    for t in tracks:
+        if t.id not in seen_ids:
+            seen_ids.add(t.id)
+            distinct_tracks.append(t)
+
+    return distinct_tracks[:limit]
 
 @app.get("/api/trending", response_model=List[TrackDto])
 async def get_trending(request: Request, category: str = Query("Tamil Hits")):
