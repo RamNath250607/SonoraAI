@@ -15,8 +15,8 @@ import subprocess
 import asyncio
 
 app = FastAPI(
-    title="SONORA AI Backend API",
-    version="1.3.0",
+    title="Ram Beats Backend API",
+    version="2.1.0",
     description="Authorized music search aggregation, full-song stream resolution, host server storage, live radio, and NLP command processing."
 )
 
@@ -287,15 +287,15 @@ async def search_full_songs(query: str, base_url: str, limit: int = 20) -> List[
 @app.get("/")
 def root():
     return {
-        "app": "SONORA AI Backend",
-        "version": "1.4.0",
+        "app": "Ram Beats Backend",
+        "version": "2.1.0",
         "status": "online",
         "features": ["100%-full-songs", "full-song-stream", "full-song-host", "live-radio", "nlp-voice", "cross-platform-pwa"]
     }
 
 @app.get("/health")
 def health():
-    return {"status": "ok", "service": "sonora-ai-backend"}
+    return {"status": "ok", "service": "ram-beats-backend"}
 
 @app.api_route("/api/stream/{video_id}", methods=["GET", "HEAD"])
 async def get_audio_stream(video_id: str):
@@ -312,16 +312,23 @@ async def get_audio_stream(video_id: str):
 @app.get("/api/download-apk")
 def download_android_apk():
     """
-    Directly downloads the compiled Android SonoraAI.apk to any phone or laptop.
+    Directly downloads the compiled Android Ram-Beats.apk to any phone or laptop.
     """
-    apk_path = os.path.join(MEDIA_DIR, "app-debug.apk")
-    if os.path.exists(apk_path):
-        return FileResponse(
-            apk_path,
-            filename="SonoraAI.apk",
-            media_type="application/vnd.android.package-archive"
-        )
-    raise HTTPException(status_code=404, detail="SonoraAI.apk build not found on server.")
+    candidates = [
+        os.path.join(MEDIA_DIR, "Ram-Beats.apk"),
+        os.path.join(MEDIA_DIR, "app-debug.apk"),
+        os.path.join(os.path.dirname(BASE_DIR), "Ram-Beats.apk"),
+        os.path.join(os.path.dirname(BASE_DIR), "app-debug.apk"),
+        os.path.join(os.path.dirname(BASE_DIR), "app", "build", "outputs", "apk", "debug", "app-debug.apk")
+    ]
+    for apk_path in candidates:
+        if os.path.exists(apk_path):
+            return FileResponse(
+                apk_path,
+                filename="Ram-Beats.apk",
+                media_type="application/vnd.android.package-archive"
+            )
+    raise HTTPException(status_code=404, detail="Ram-Beats.apk build not found on server.")
 
 @app.get("/api/download/{video_id}")
 async def download_track_audio(video_id: str, title: Optional[str] = "song"):
@@ -444,7 +451,7 @@ async def get_radio_stations(tag: Optional[str] = None):
         try:
             url = f"https://de1.api.radio-browser.info/json/stations/bytag/{urllib.parse.quote(tag.lower())}?limit=15"
             async with httpx.AsyncClient(timeout=6.0) as client:
-                res = await client.get(url, headers={"User-Agent": "SonoraAI/1.0"})
+                res = await client.get(url, headers={"User-Agent": "RamBeats/2.1"})
                 if res.status_code == 200:
                     for item in res.json():
                         stream_url = item.get("url_resolved") or item.get("url")

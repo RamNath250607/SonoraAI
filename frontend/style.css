@@ -70,6 +70,30 @@ body {
   box-shadow: 0 0 16px rgba(0, 245, 212, 0.4);
 }
 
+.brand-logo-img {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--cyan);
+  box-shadow: 0 0 16px rgba(0, 245, 212, 0.5);
+  transition: transform 0.3s ease;
+}
+
+.brand-logo-img:hover {
+  transform: scale(1.08) rotate(5deg);
+}
+
+.hero-logo-img {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid rgba(255, 215, 0, 0.7);
+  box-shadow: 0 0 35px rgba(255, 180, 0, 0.6), 0 0 50px rgba(0, 245, 212, 0.4);
+  animation: disk-spin 20s linear infinite;
+}
+
 .brand h1 {
   font-size: 22px;
   font-weight: 800;

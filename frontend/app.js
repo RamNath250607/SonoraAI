@@ -1,4 +1,4 @@
-// SONORA AI Multi-Device Web Client (iPhone, Android, Laptop)
+// Ram Beats Multi-Device Web Client (iPhone, Android, Laptop)
 const API_BASE = window.location.port === "3000" 
   ? `http://${window.location.hostname}:8080` 
   : window.location.origin;
@@ -327,7 +327,7 @@ function updateMediaSession() {
     navigator.mediaSession.metadata = new MediaMetadata({
       title: currentTrack.title,
       artist: currentTrack.artist,
-      album: currentTrack.album || "SONORA AI",
+      album: currentTrack.album || "Ram Beats",
       artwork: [
         { src: currentTrack.artworkUrl || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=512', sizes: '512x512', type: 'image/jpeg' }
       ]

@@ -148,7 +148,7 @@ fun SettingsScreen(
         // Privacy & Transparency Notice
         SettingsCard(title = "Privacy & Permissions", icon = Icons.Default.Security) {
             Text(
-                text = "• Microphone: Used strictly when you tap the voice button to recognize speech into search & playback commands. Audio is never stored or recorded.\n\n• Legal Playback: SONORA AI streams authorized previews and open-catalog audio directly via Media3 ExoPlayer without bypassing DRM or scraping protected sources.",
+                text = "• Microphone: Used strictly when you tap the voice button to recognize speech into search & playback commands. Audio is never stored or recorded.\n\n• Legal Playback: Ram Beats streams authorized full songs and open-catalog audio directly via Media3 ExoPlayer without bypassing DRM or scraping protected sources.",
                 color = SonoraTextSecondary,
                 fontSize = 13.sp,
                 lineHeight = 19.sp
@@ -158,9 +158,9 @@ fun SettingsScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         // About Card
-        SettingsCard(title = "About SONORA AI", icon = Icons.Default.Info) {
+        SettingsCard(title = "About Ram Beats", icon = Icons.Default.Info) {
             Text(
-                text = "SONORA AI v1.0\nBuilt with Kotlin, Jetpack Compose, Material 3, and Media3 ExoPlayer.",
+                text = "Ram Beats v2.1\nBuilt with Kotlin, Jetpack Compose, Material 3, and Media3 ExoPlayer.",
                 color = SonoraTextTertiary,
                 fontSize = 12.sp,
                 lineHeight = 18.sp

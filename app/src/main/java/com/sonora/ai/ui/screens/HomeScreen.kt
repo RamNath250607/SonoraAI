@@ -94,28 +94,39 @@ fun HomeScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Column {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    androidx.compose.foundation.Image(
+                        painter = androidx.compose.ui.res.painterResource(id = com.sonora.ai.R.drawable.logo),
+                        contentDescription = "Ram Beats Logo",
+                        modifier = Modifier
+                            .size(38.dp)
+                            .clip(CircleShape)
+                            .border(1.5.dp, SonoraCyan, CircleShape)
+                    )
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Column {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = "RAM",
+                                color = SonoraTextPrimary,
+                                fontSize = 22.sp,
+                                fontWeight = FontWeight.ExtraBold,
+                                letterSpacing = 1.sp
+                            )
+                            Spacer(modifier = Modifier.width(5.dp))
+                            Text(
+                                text = "BEATS",
+                                color = SonoraCyan,
+                                fontSize = 22.sp,
+                                fontWeight = FontWeight.ExtraBold
+                            )
+                        }
                         Text(
-                            text = "RAM",
-                            color = SonoraTextPrimary,
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.ExtraBold,
-                            letterSpacing = 1.sp
-                        )
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = "BEATS",
-                            color = SonoraCyan,
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.ExtraBold
+                            text = "Smart Voice & Full Music Player",
+                            color = SonoraTextSecondary,
+                            fontSize = 11.sp
                         )
                     }
-                    Text(
-                        text = "Smart Voice & Full Music Player",
-                        color = SonoraTextSecondary,
-                        fontSize = 12.sp
-                    )
                 }
 
                 // Glowing Voice Trigger Button

@@ -3,15 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>SONORA AI — Smart Voice & Text Music Player</title>
+  <title>Ram Beats — Smart Voice & Full Music Player</title>
   
   <!-- PWA & Mobile Meta for iPhone & Android -->
   <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
   <meta name="theme-color" content="#0a0713">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="SONORA AI">
-  <link rel="apple-touch-icon" href="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=192">
+  <meta name="apple-mobile-web-app-title" content="Ram Beats">
+  <link rel="apple-touch-icon" href="logo.png">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -24,8 +25,8 @@
     <!-- Sidebar for Desktop & Tablets -->
     <aside class="sidebar">
       <div class="brand">
-        <div class="brand-icon"><i class="fa-solid fa-bolt"></i></div>
-        <h1>SONORA <span>AI</span></h1>
+        <img src="logo.png" alt="Ram Beats Logo" class="brand-logo-img">
+        <h1>RAM <span>BEATS</span></h1>
       </div>
       <p class="brand-subtitle">Smart Music for All Devices</p>
 
@@ -52,11 +53,11 @@
       </div>
 
       <div class="sidebar-apk-box">
-        <a id="sidebar-download-apk-btn" href="/api/download-apk" download="SonoraAI.apk" class="sidebar-apk-btn" title="Download SonoraAI.apk for Android">
+        <a id="sidebar-download-apk-btn" href="/api/download-apk" download="Ram-Beats.apk" class="sidebar-apk-btn" title="Download Ram Beats APK for Android">
           <i class="fa-brands fa-android"></i>
           <div>
             <strong>Get Android App</strong>
-            <small>Download SonoraAI.apk</small>
+            <small>Download Ram-Beats.apk</small>
           </div>
         </a>
       </div>
@@ -81,7 +82,7 @@
         </div>
 
         <div class="top-actions">
-          <a id="topbar-download-apk-btn" href="/api/download-apk" download="SonoraAI.apk" class="btn-apk-download" title="Download Android APK">
+          <a id="topbar-download-apk-btn" href="/api/download-apk" download="Ram-Beats.apk" class="btn-apk-download" title="Download Ram Beats APK">
             <i class="fa-brands fa-android"></i> Download APK
           </a>
           <button id="btn-open-upload" class="btn-hero-primary" style="padding: 8px 16px; font-size: 13px;">
@@ -111,12 +112,12 @@
             <div class="hero-actions">
               <button id="hero-listen-btn" class="btn-hero-primary"><i class="fa-solid fa-microphone"></i> Speak Voice Command</button>
               <button id="hero-radio-btn" class="btn-hero-secondary"><i class="fa-solid fa-tower-broadcast"></i> Tune In Radio</button>
-              <a href="/api/download-apk" download="SonoraAI.apk" class="btn-hero-secondary" style="text-decoration:none;"><i class="fa-brands fa-android"></i> Download APK</a>
+              <a href="/api/download-apk" download="Ram-Beats.apk" class="btn-hero-secondary" style="text-decoration:none;"><i class="fa-brands fa-android"></i> Download APK</a>
             </div>
           </div>
           <div class="hero-visual">
             <div class="visual-disk">
-              <i class="fa-solid fa-compact-disc disk-icon"></i>
+              <img src="logo.png" alt="Ram Beats Emblem" class="hero-logo-img">
             </div>
           </div>
         </div>
@@ -217,10 +218,10 @@
     <div class="player-content">
       <!-- Track Metadata -->
       <div class="player-track-info">
-        <img id="player-art" src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=120" alt="Artwork">
+        <img id="player-art" src="logo.png" alt="Artwork">
         <div class="player-titles">
           <h4 id="player-title">Select a song or radio station</h4>
-          <p id="player-artist">SONORA AI</p>
+          <p id="player-artist">Ram Beats</p>
         </div>
         <button id="player-download-btn" class="btn-icon" title="Download Current Song"><i class="fa-solid fa-download"></i></button>
         <button id="player-fav-btn" class="btn-icon" title="Save to Favorites"><i class="fa-regular fa-heart"></i></button>
