@@ -12,15 +12,23 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import android.content.Intent
+import android.net.Uri
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.GraphicEq
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Security
+import androidx.compose.material.icons.filled.SystemUpdate
 import androidx.compose.material3.Icon
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
@@ -160,11 +168,37 @@ fun SettingsScreen(
         // About Card
         SettingsCard(title = "About Ram Beats", icon = Icons.Default.Info) {
             Text(
-                text = "Ram Beats v2.1\nBuilt with Kotlin, Jetpack Compose, Material 3, and Media3 ExoPlayer.",
+                text = "Ram Beats v2.2\nBuilt with Kotlin, Jetpack Compose, Material 3, and Media3 ExoPlayer.",
                 color = SonoraTextTertiary,
                 fontSize = 12.sp,
                 lineHeight = 18.sp
             )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        val context = LocalContext.current
+        SettingsCard(title = "App Updates & Live Sync", icon = Icons.Default.SystemUpdate) {
+            Text(
+                text = "• Version: v2.2 (Build 4)\n• Auto-Sync: Music, trending tracks, & radio update live from server\n• Direct Update: Tap below to update APK without searching files",
+                color = SonoraTextSecondary,
+                fontSize = 12.sp,
+                lineHeight = 18.sp
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            Button(
+                onClick = {
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("http://192.168.1.23:8080/api/download-apk"))
+                    context.startActivity(intent)
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = SonoraCyan),
+                shape = RoundedCornerShape(10.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(Icons.Default.Download, contentDescription = null, tint = SonoraBackground)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Update Ram Beats on Phone", color = SonoraBackground, fontWeight = FontWeight.Bold)
+            }
         }
     }
 }

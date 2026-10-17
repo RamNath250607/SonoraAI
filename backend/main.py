@@ -297,6 +297,17 @@ def root():
 def health():
     return {"status": "ok", "service": "ram-beats-backend"}
 
+@app.get("/api/app-version")
+def get_app_version():
+    return {
+        "versionCode": 4,
+        "versionName": "2.2",
+        "appName": "Ram Beats",
+        "updateUrl": "/api/download-apk",
+        "releaseNotes": "Live music streaming, full song engine, custom golden R emblem, and seamless in-app auto updates without manual downloading.",
+        "minRequiredVersion": 1
+    }
+
 @app.api_route("/api/stream/{video_id}", methods=["GET", "HEAD"])
 async def get_audio_stream(video_id: str):
     """
