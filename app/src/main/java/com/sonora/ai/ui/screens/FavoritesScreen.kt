@@ -1,6 +1,11 @@
 package com.sonora.ai.ui.screens
 
+import androidx.compose.foundation.Image
+import androidx.compose.ui.res.painterResource
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -62,18 +67,29 @@ fun FavoritesScreen(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Column {
-                Text(
-                    text = "Favorites",
-                    color = SonoraTextPrimary,
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Bold
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Image(
+                    painter = painterResource(id = com.sonora.ai.R.drawable.logo),
+                    contentDescription = "Ram Beats Logo",
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(CircleShape)
+                        .border(1.5.dp, SonoraCyan, CircleShape)
                 )
-                Text(
-                    text = "${favorites.size} songs saved",
-                    color = SonoraTextTertiary,
-                    fontSize = 12.sp
-                )
+                Spacer(modifier = Modifier.width(10.dp))
+                Column {
+                    Text(
+                        text = "Favorites",
+                        color = SonoraTextPrimary,
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "${favorites.size} songs saved",
+                        color = SonoraTextTertiary,
+                        fontSize = 12.sp
+                    )
+                }
             }
 
             if (favorites.isNotEmpty()) {

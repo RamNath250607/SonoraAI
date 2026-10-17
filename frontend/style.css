@@ -94,6 +94,10 @@ body {
   animation: disk-spin 20s linear infinite;
 }
 
+.mobile-header {
+  display: none;
+}
+
 .brand h1 {
   font-size: 22px;
   font-weight: 800;
@@ -1160,6 +1164,32 @@ body {
 @media (max-width: 768px) {
   .sidebar {
     display: none;
+  }
+
+  .mobile-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 6px 0 14px 0;
+    margin-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .mobile-header .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .mobile-header .brand-logo-img {
+    width: 38px;
+    height: 38px;
+  }
+
+  .mobile-header .brand h1 {
+    font-size: 20px;
+    margin: 0;
   }
 
   .mobile-bottom-nav {

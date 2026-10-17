@@ -206,21 +206,12 @@ private fun PlayerView(
                 .background(SonoraCard),
             contentAlignment = Alignment.Center
         ) {
-            if (track.artworkUrl.isNotBlank()) {
-                AsyncImage(
-                    model = track.artworkUrl,
-                    contentDescription = track.title,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
-                )
-            } else {
-                Icon(
-                    imageVector = Icons.Default.MusicNote,
-                    contentDescription = null,
-                    tint = SonoraPurple,
-                    modifier = Modifier.size(72.dp)
-                )
-            }
+            AsyncImage(
+                model = if (track.artworkUrl.isNotBlank() && !track.artworkUrl.contains("unsplash") && track.artworkUrl != "/logo.png") track.artworkUrl else com.sonora.ai.R.drawable.logo,
+                contentDescription = track.title,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
+            )
         }
 
         Spacer(modifier = Modifier.height(24.dp))

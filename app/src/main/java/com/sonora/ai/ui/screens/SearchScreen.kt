@@ -1,5 +1,7 @@
 package com.sonora.ai.ui.screens
 
+import androidx.compose.foundation.Image
+import androidx.compose.ui.res.painterResource
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -306,11 +308,13 @@ fun SearchScreen(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier.padding(32.dp)
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.MusicNote,
-                            contentDescription = null,
-                            tint = SonoraPurple.copy(alpha = 0.5f),
-                            modifier = Modifier.size(64.dp)
+                        Image(
+                            painter = painterResource(id = com.sonora.ai.R.drawable.logo),
+                            contentDescription = "Ram Beats Logo",
+                            modifier = Modifier
+                                .size(72.dp)
+                                .clip(CircleShape)
+                                .border(1.5.dp, SonoraCyan, CircleShape)
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(

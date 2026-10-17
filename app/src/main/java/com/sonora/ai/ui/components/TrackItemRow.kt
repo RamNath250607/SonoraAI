@@ -67,21 +67,12 @@ fun TrackItemRow(
                 .background(SonoraCard),
             contentAlignment = Alignment.Center
         ) {
-            if (track.artworkUrl.isNotBlank()) {
-                AsyncImage(
-                    model = track.artworkUrl,
-                    contentDescription = track.title,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.matchParentSize()
-                )
-            } else {
-                Icon(
-                    imageVector = Icons.Default.MusicNote,
-                    contentDescription = null,
-                    tint = SonoraPurple,
-                    modifier = Modifier.size(24.dp)
-                )
-            }
+            AsyncImage(
+                model = if (track.artworkUrl.isNotBlank() && !track.artworkUrl.contains("unsplash") && track.artworkUrl != "/logo.png") track.artworkUrl else com.sonora.ai.R.drawable.logo,
+                contentDescription = track.title,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.matchParentSize()
+            )
 
             // Play overlay if currently active
             if (isCurrentTrack) {

@@ -129,7 +129,7 @@ function renderRadioGrid(stations) {
     card.innerHTML = `
       <span class="radio-live-tag">🔴 LIVE</span>
       <div class="card-art-box">
-        <img src="${st.favicon || 'https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=300'}" alt="${st.name}">
+        <img src="${st.favicon || 'logo.png'}" alt="${st.name}">
         <div class="card-play-overlay">
           <div class="play-circle-small"><i class="fa-solid fa-play"></i></div>
         </div>
@@ -144,7 +144,7 @@ function renderRadioGrid(stations) {
         title: st.name,
         artist: "Live Radio Station",
         album: st.tags || "Radio Broadcast",
-        artworkUrl: st.favicon || "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=300",
+        artworkUrl: st.favicon || "logo.png",
         streamUrl: st.streamUrl,
         durationMs: 0,
         isLive: true,
@@ -180,7 +180,7 @@ function renderFeatured(tracks) {
     card.className = "music-card";
     card.innerHTML = `
       <div class="card-art-box">
-        <img src="${track.artworkUrl || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=300'}" alt="${track.title}">
+        <img src="${track.artworkUrl || 'logo.png'}" alt="${track.title}">
         <div class="card-play-overlay">
           <div class="play-circle-small"><i class="fa-solid fa-play"></i></div>
         </div>
@@ -211,7 +211,7 @@ function renderTrackList(container, tracks, queue) {
 
     row.innerHTML = `
       <div class="track-row-art">
-        <img src="${track.artworkUrl || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=120'}" alt="${track.title}">
+        <img src="${track.artworkUrl || 'logo.png'}" alt="${track.title}">
       </div>
       <div class="track-row-info">
         <div class="track-row-title">${track.title}</div>
@@ -263,7 +263,7 @@ function playTrack(track, queue = [track]) {
 
   playerTitle.innerText = track.title;
   playerArtist.innerText = `${track.artist} • ${track.album || ''}`;
-  playerArt.src = track.artworkUrl || "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=120";
+  playerArt.src = track.artworkUrl || "logo.png";
   
   if (track.isLive) {
     playerBadge.innerText = "🔴 LIVE";
@@ -329,7 +329,7 @@ function updateMediaSession() {
       artist: currentTrack.artist,
       album: currentTrack.album || "Ram Beats",
       artwork: [
-        { src: currentTrack.artworkUrl || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=512', sizes: '512x512', type: 'image/jpeg' }
+        { src: currentTrack.artworkUrl || 'logo.png', sizes: '512x512', type: 'image/png' }
       ]
     });
   }

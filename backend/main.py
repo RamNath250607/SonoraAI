@@ -83,7 +83,7 @@ CURATED_RADIO_STATIONS: List[RadioStationDto] = [
         name="Tamil Sun FM",
         tags="Tamil, Super Hits, 24/7",
         streamUrl="https://stream.zeno.fm/f3wvbbqmdg8uv",
-        favicon="https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=200",
+        favicon="/logo.png",
         country="India",
         language="Tamil"
     ),
@@ -92,7 +92,7 @@ CURATED_RADIO_STATIONS: List[RadioStationDto] = [
         name="Ilayaraja 24/7 Radio",
         tags="Classic, Ilayaraja, Tamil Melodies",
         streamUrl="https://stream.zeno.fm/c30b207uvp8uv",
-        favicon="https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=200",
+        favicon="/logo.png",
         country="India",
         language="Tamil"
     ),
@@ -101,7 +101,7 @@ CURATED_RADIO_STATIONS: List[RadioStationDto] = [
         name="A.R. Rahman Hits FM",
         tags="ARR, Oscar Winner, Tamil, World",
         streamUrl="https://stream.zeno.fm/4vrtz37uvp8uv",
-        favicon="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=200",
+        favicon="/logo.png",
         country="India",
         language="Tamil"
     ),
@@ -110,7 +110,7 @@ CURATED_RADIO_STATIONS: List[RadioStationDto] = [
         name="Tamil Panpalai FM",
         tags="Talk, News, Retro Tamil",
         streamUrl="https://stream.zeno.fm/s4kqq73c1nhvv",
-        favicon="https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=200",
+        favicon="/logo.png",
         country="India",
         language="Tamil"
     ),
@@ -119,7 +119,7 @@ CURATED_RADIO_STATIONS: List[RadioStationDto] = [
         name="Lofi Girl 24/7 Beats",
         tags="Lo-Fi, Study, Relax, Chillhop",
         streamUrl="https://play.streamafrica.net/lofigirl",
-        favicon="https://images.unsplash.com/photo-1518609878373-06d740f60d8b?w=200",
+        favicon="/logo.png",
         country="Global",
         language="Instrumental"
     ),
@@ -128,7 +128,7 @@ CURATED_RADIO_STATIONS: List[RadioStationDto] = [
         name="Nightwave Plaza Synthwave",
         tags="Synthwave, Vaporwave, Cyberpunk",
         streamUrl="https://radio.plaza.one/mp3",
-        favicon="https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=200",
+        favicon="/logo.png",
         country="Global",
         language="Electronic"
     )
@@ -198,7 +198,7 @@ async def resolve_full_song_stream(query: str) -> Optional[TrackDto]:
                         title=data.get("title", clean),
                         artist=data.get("uploader", "Music Artist").replace(" - Topic", ""),
                         album="Full Song Release",
-                        artworkUrl=data.get("thumbnail") or "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600",
+                        artworkUrl=data.get("thumbnail") or "/logo.png",
                         streamUrl=stream_url,
                         durationMs=int(data.get("duration", 240) * 1000),
                         sourceName="Full Song Stream",
@@ -300,11 +300,11 @@ def health():
 @app.get("/api/app-version")
 def get_app_version():
     return {
-        "versionCode": 4,
-        "versionName": "2.2",
+        "versionCode": 5,
+        "versionName": "2.3",
         "appName": "Ram Beats",
         "updateUrl": "/api/download-apk",
-        "releaseNotes": "Live music streaming, full song engine, custom golden R emblem, and seamless in-app auto updates without manual downloading.",
+        "releaseNotes": "Everywhere branded to Ram Beats with universal metallic R logo emblem across all screens and fallbacks.",
         "minRequiredVersion": 1
     }
 
@@ -391,7 +391,7 @@ def get_hosted_songs(request: Request):
                 title=item.get("title", "Untitled Track"),
                 artist=item.get("artist", "Host Artist"),
                 album=item.get("album", "Host Server Vault"),
-                artworkUrl=item.get("artworkUrl", "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600"),
+                artworkUrl=item.get("artworkUrl", "/logo.png"),
                 streamUrl=stream_url or "",
                 durationMs=item.get("durationMs", 180000),
                 sourceName="Host Server (Full Song)",
@@ -422,7 +422,7 @@ async def upload_song(
     stream_url = f"{base_url}/media/{clean_name}"
     song_id = f"hosted_{uuid.uuid4().hex[:8]}"
 
-    artwork = "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600"
+    artwork = "/logo.png"
     new_entry = {
         "id": song_id,
         "title": title.strip(),
@@ -473,7 +473,7 @@ async def get_radio_stations(tag: Optional[str] = None):
                                     name=item.get("name", "Online Radio"),
                                     tags=item.get("tags", tag),
                                     streamUrl=stream_url,
-                                    favicon=item.get("favicon") or "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=200",
+                                    favicon=item.get("favicon") or "/logo.png",
                                     country=item.get("country", "India"),
                                     language=item.get("language", tag)
                                 )
