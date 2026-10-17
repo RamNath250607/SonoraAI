@@ -27,7 +27,7 @@ class ItunesMusicProvider(
 
             val request = Request.Builder()
                 .url(url)
-                .header("User-Agent", "SonoraAI/1.0 (Android)")
+                .header("User-Agent", "RamBeats/2.3 (Android)")
                 .build()
 
             val response = client.newCall(request).execute()

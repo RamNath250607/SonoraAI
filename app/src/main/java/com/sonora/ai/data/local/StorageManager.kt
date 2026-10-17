@@ -10,7 +10,24 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 class StorageManager(context: Context) {
-    private val prefs: SharedPreferences = context.getSharedPreferences("sonora_ai_prefs", Context.MODE_PRIVATE)
+    private val prefs: SharedPreferences = run {
+        val newPrefs = context.getSharedPreferences("ram_beats_prefs", Context.MODE_PRIVATE)
+        val oldPrefs = context.getSharedPreferences("sonora_ai_prefs", Context.MODE_PRIVATE)
+        if (oldPrefs.all.isNotEmpty() && newPrefs.all.isEmpty()) {
+            val editor = newPrefs.edit()
+            oldPrefs.all.forEach { (k, v) ->
+                when (v) {
+                    is String -> editor.putString(k, v)
+                    is Boolean -> editor.putBoolean(k, v)
+                    is Int -> editor.putInt(k, v)
+                    is Long -> editor.putLong(k, v)
+                    is Float -> editor.putFloat(k, v)
+                }
+            }
+            editor.apply()
+        }
+        newPrefs
+    }
     private val gson = Gson()
 
     private val _favoritesFlow = MutableStateFlow<List<Track>>(emptyList())

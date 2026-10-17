@@ -300,11 +300,11 @@ def health():
 @app.get("/api/app-version")
 def get_app_version():
     return {
-        "versionCode": 5,
-        "versionName": "2.3",
+        "versionCode": 6,
+        "versionName": "2.4",
         "appName": "Ram Beats",
         "updateUrl": "/api/download-apk",
-        "releaseNotes": "Everywhere branded to Ram Beats with universal metallic R logo emblem across all screens and fallbacks.",
+        "releaseNotes": "Complete internal branding: Ram Beats names, preferences, and universal metallic golden R logo emblem everywhere.",
         "minRequiredVersion": 1
     }
 
@@ -351,7 +351,7 @@ async def download_track_audio(video_id: str, title: Optional[str] = "song"):
     if not stream_url:
         raise HTTPException(status_code=404, detail="Audio stream could not be resolved.")
 
-    safe_title = re.sub(r'[\\/*?:"<>|]', "", title or "Song").strip() or "SonoraSong"
+    safe_title = re.sub(r'[\\/*?:"<>|]', "", title or "Song").strip() or "RamBeatsSong"
     safe_title = safe_title.replace(" ", "_")
 
     return RedirectResponse(

@@ -9,7 +9,7 @@ let currentQueue = [];
 let queueIndex = -1;
 let isShuffle = false;
 let repeatMode = 0; // 0 = off, 1 = repeat all, 2 = repeat one
-let favorites = JSON.parse(localStorage.getItem("sonora_favs") || "[]");
+let favorites = JSON.parse(localStorage.getItem("rambeats_favs") || localStorage.getItem("sonora_favs") || "[]");
 let radioStations = [];
 let hostedSongs = [];
 
@@ -462,7 +462,7 @@ function toggleFavorite(track) {
   } else {
     favorites.unshift(track);
   }
-  localStorage.setItem("sonora_favs", JSON.stringify(favorites));
+  localStorage.setItem("rambeats_favs", JSON.stringify(favorites));
   updateFavoritesBadge();
 }
 

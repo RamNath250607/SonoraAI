@@ -38,7 +38,7 @@ class SonoraBackendMusicProvider(
     private val gson: Gson = Gson()
 ) : MusicProvider {
 
-    override val name: String = "SONORA AI Full-Song Engine"
+    override val name: String = "Ram Beats Full-Song Engine"
 
     override suspend fun search(query: String, limit: Int): Result<List<Track>> = withContext(Dispatchers.IO) {
         val encodedQuery = URLEncoder.encode(query.trim(), "UTF-8")
@@ -49,7 +49,7 @@ class SonoraBackendMusicProvider(
                 val url = "$host/api/search?q=$encodedQuery&limit=$limit"
                 val request = Request.Builder()
                     .url(url)
-                    .header("User-Agent", "SonoraAI-Android/2.0")
+                    .header("User-Agent", "RamBeats-Android/2.3")
                     .build()
 
                 val response = client.newCall(request).execute()
@@ -71,7 +71,7 @@ class SonoraBackendMusicProvider(
                             title = dto.title,
                             artist = dto.artist,
                             album = dto.album ?: "Full Song Release",
-                            artworkUrl = dto.artworkUrl ?: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600",
+                            artworkUrl = if (dto.artworkUrl.isNullOrBlank() || dto.artworkUrl.contains("unsplash")) "" else dto.artworkUrl,
                             streamUrl = fixedStreamUrl,
                             durationMs = dto.durationMs,
                             sourceName = dto.sourceName ?: "Full Song Stream",
@@ -88,7 +88,7 @@ class SonoraBackendMusicProvider(
                 lastError = e
             }
         }
-        Result.failure(lastError ?: Exception("Unable to reach SONORA backend"))
+        Result.failure(lastError ?: Exception("Unable to reach Ram Beats backend"))
     }
 
     override suspend fun getTrending(category: String): Result<List<Track>> = withContext(Dispatchers.IO) {
@@ -100,7 +100,7 @@ class SonoraBackendMusicProvider(
                 val url = "$host/api/trending?category=$encodedCat"
                 val request = Request.Builder()
                     .url(url)
-                    .header("User-Agent", "SonoraAI-Android/1.4")
+                    .header("User-Agent", "RamBeats-Android/2.3")
                     .build()
 
                 val response = client.newCall(request).execute()
@@ -122,7 +122,7 @@ class SonoraBackendMusicProvider(
                             title = dto.title,
                             artist = dto.artist,
                             album = dto.album ?: "Full Song Release",
-                            artworkUrl = dto.artworkUrl ?: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600",
+                            artworkUrl = if (dto.artworkUrl.isNullOrBlank() || dto.artworkUrl.contains("unsplash")) "" else dto.artworkUrl,
                             streamUrl = fixedStreamUrl,
                             durationMs = dto.durationMs,
                             sourceName = dto.sourceName ?: "Full Song Stream",
@@ -139,6 +139,6 @@ class SonoraBackendMusicProvider(
                 lastError = e
             }
         }
-        Result.failure(lastError ?: Exception("Unable to reach SONORA backend"))
+        Result.failure(lastError ?: Exception("Unable to reach Ram Beats backend"))
     }
 }
