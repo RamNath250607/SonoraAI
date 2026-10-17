@@ -73,8 +73,10 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("server-url-display").innerText = API_BASE;
   const topbarApkBtn = document.getElementById("topbar-download-apk-btn");
   const sidebarApkBtn = document.getElementById("sidebar-download-apk-btn");
+  const mobileApkBtn = document.getElementById("mobile-download-apk-btn");
   if (topbarApkBtn) topbarApkBtn.href = `${API_BASE}/api/download-apk`;
   if (sidebarApkBtn) sidebarApkBtn.href = `${API_BASE}/api/download-apk`;
+  if (mobileApkBtn) mobileApkBtn.href = `${API_BASE}/api/download-apk`;
   updateFavoritesBadge();
   loadTrending("Tamil Hits");
   loadRadioStations("all");

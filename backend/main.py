@@ -320,7 +320,7 @@ async def get_audio_stream(video_id: str):
         raise HTTPException(status_code=404, detail="Audio stream could not be resolved.")
     return RedirectResponse(url=stream_url, status_code=307, headers={"Access-Control-Allow-Origin": "*"})
 
-@app.get("/api/download-apk")
+@app.api_route("/api/download-apk", methods=["GET", "HEAD"])
 def download_android_apk():
     """
     Directly downloads the compiled Android Ram-Beats.apk to any phone or laptop.
