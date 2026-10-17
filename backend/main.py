@@ -7,6 +7,7 @@ from typing import List, Optional
 import httpx
 import re
 import os
+import sys
 import json
 import uuid
 import urllib.parse
@@ -154,7 +155,7 @@ async def resolve_video_audio_stream(video_id: str) -> Optional[str]:
     loop = asyncio.get_event_loop()
     def _extract():
         try:
-            cmd = ["yt-dlp", "-f", "ba[ext=m4a]/ba", "-g", f"https://www.youtube.com/watch?v={clean_id}"]
+            cmd = [sys.executable, "-m", "yt_dlp", "-f", "ba[ext=m4a]/ba", "-g", f"https://www.youtube.com/watch?v={clean_id}"]
             res = subprocess.run(cmd, capture_output=True, text=True, timeout=12)
             if res.returncode == 0 and res.stdout.strip():
                 lines = [l.strip() for l in res.stdout.strip().splitlines() if l.strip().startswith("http")]
@@ -179,7 +180,7 @@ async def resolve_full_song_stream(query: str) -> Optional[TrackDto]:
     def _fetch():
         try:
             cmd = [
-                "yt-dlp",
+                sys.executable, "-m", "yt_dlp",
                 "-f", "ba[ext=m4a]/ba",
                 "--dump-json",
                 f"ytsearch1:{clean} song"
@@ -224,7 +225,7 @@ async def search_full_songs(query: str, base_url: str, limit: int = 20) -> List[
         tracks = []
         try:
             cmd = [
-                "yt-dlp",
+                sys.executable, "-m", "yt_dlp",
                 "--flat-playlist",
                 "--dump-json",
                 f"ytsearch{limit + 5}:{clean} song"
@@ -565,3 +566,8 @@ def parse_voice_command(req: CommandRequest):
         return CommandResponse(action="PLAY", query=clean_q, originalText=req.text)
 
     return CommandResponse(action="UNKNOWN", query=text, originalText=req.text, confidence=0.5)
+
+FRONTEND_DIR = os.path.join(os.path.dirname(BASE_DIR), "frontend")
+if os.path.exists(FRONTEND_DIR):
+    app.mount("/", StaticFiles(directory=FRONTEND_DIR, html=True), name="frontend")
+
