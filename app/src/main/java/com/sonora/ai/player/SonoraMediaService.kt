@@ -24,7 +24,17 @@ class SonoraMediaService : MediaSessionService() {
             .setUsage(C.USAGE_MEDIA)
             .build()
 
+        val httpDataSourceFactory = androidx.media3.datasource.DefaultHttpDataSource.Factory()
+            .setUserAgent("RamBeats-Player/2.4")
+            .setAllowCrossProtocolRedirects(true)
+            .setConnectTimeoutMs(15000)
+            .setReadTimeoutMs(20000)
+
+        val mediaSourceFactory = androidx.media3.exoplayer.source.DefaultMediaSourceFactory(this)
+            .setDataSourceFactory(httpDataSourceFactory)
+
         exoPlayer = ExoPlayer.Builder(this)
+            .setMediaSourceFactory(mediaSourceFactory)
             .setAudioAttributes(audioAttributes, true) // true handles audio focus automatically
             .setHandleAudioBecomingNoisy(true) // pauses playback when headphones unplugged
             .build()

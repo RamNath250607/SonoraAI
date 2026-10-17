@@ -8,7 +8,9 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
+import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import com.sonora.ai.data.model.Track
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -39,7 +41,17 @@ class MusicPlayerController private constructor(context: Context) {
     private val applicationContext = context.applicationContext
     private val scope = CoroutineScope(Dispatchers.Main + Job())
 
+    private val httpDataSourceFactory = DefaultHttpDataSource.Factory()
+        .setUserAgent("RamBeats-Player/2.4")
+        .setAllowCrossProtocolRedirects(true)
+        .setConnectTimeoutMs(15000)
+        .setReadTimeoutMs(20000)
+
+    private val mediaSourceFactory = DefaultMediaSourceFactory(applicationContext)
+        .setDataSourceFactory(httpDataSourceFactory)
+
     private val player: ExoPlayer = ExoPlayer.Builder(applicationContext)
+        .setMediaSourceFactory(mediaSourceFactory)
         .setAudioAttributes(
             AudioAttributes.Builder()
                 .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)

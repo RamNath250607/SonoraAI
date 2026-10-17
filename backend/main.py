@@ -263,7 +263,7 @@ async def search_full_songs(query: str, base_url: str, limit: int = 20) -> List[
                                 artist=artist,
                                 album="Full Song Release",
                                 artworkUrl=art,
-                                streamUrl=f"{base_url}/api/stream/{vid_id}",
+                                streamUrl=f"/api/stream/{vid_id}",
                                 durationMs=int(dur * 1000),
                                 sourceName="Full Song Stream",
                                 isPreview=False,
@@ -286,9 +286,12 @@ async def search_full_songs(query: str, base_url: str, limit: int = 20) -> List[
 
 @app.get("/")
 def root():
+    index_file = os.path.join(FRONTEND_DIR, "index.html")
+    if os.path.exists(index_file):
+        return FileResponse(index_file)
     return {
         "app": "Ram Beats Backend",
-        "version": "2.1.0",
+        "version": "2.4.0",
         "status": "online",
         "features": ["100%-full-songs", "full-song-stream", "full-song-host", "live-radio", "nlp-voice", "cross-platform-pwa"]
     }
@@ -300,11 +303,11 @@ def health():
 @app.get("/api/app-version")
 def get_app_version():
     return {
-        "versionCode": 6,
-        "versionName": "2.4",
+        "versionCode": 7,
+        "versionName": "2.5",
         "appName": "Ram Beats",
         "updateUrl": "/api/download-apk",
-        "releaseNotes": "Complete internal branding: Ram Beats names, preferences, and universal metallic golden R logo emblem everywhere.",
+        "releaseNotes": "Full-song cross-protocol streaming fix, instant local Wi-Fi connection, and adaptive golden R logo.",
         "minRequiredVersion": 1
     }
 
@@ -508,13 +511,21 @@ async def search_music(request: Request, q: str = Query(..., min_length=1), limi
         tracks = [t for t in tracks if t.id != first_track.id]
         tracks.insert(0, first_track)
 
-    # Deduplicate by ID
+    # Deduplicate by ID and ensure streamUrl matches requesting client host
     seen_ids = set()
     distinct_tracks = []
     for t in tracks:
         if t.id not in seen_ids:
             seen_ids.add(t.id)
-            distinct_tracks.append(t)
+            stream_url = t.streamUrl
+            if stream_url.startswith("/"):
+                stream_url = f"{base_url}{stream_url}"
+            elif "localhost:8080" in stream_url or "127.0.0.1:8080" in stream_url:
+                stream_url = stream_url.replace("http://localhost:8080", base_url).replace("http://127.0.0.1:8080", base_url)
+            
+            # Create copy with updated streamUrl
+            updated_track = t.copy(update={"streamUrl": stream_url})
+            distinct_tracks.append(updated_track)
 
     return distinct_tracks[:limit]
 

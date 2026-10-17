@@ -168,7 +168,7 @@ fun SettingsScreen(
         // About Card
         SettingsCard(title = "About Ram Beats", icon = Icons.Default.Info) {
             Text(
-                text = "Ram Beats v2.4\nBuilt with Kotlin, Jetpack Compose, Material 3, and Media3 ExoPlayer.",
+                text = "Ram Beats v2.5\nBuilt with Kotlin, Jetpack Compose, Material 3, and Media3 ExoPlayer.",
                 color = SonoraTextTertiary,
                 fontSize = 12.sp,
                 lineHeight = 18.sp
